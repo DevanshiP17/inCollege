@@ -68,6 +68,7 @@
       *> Current account being processed
        01 WS-CURRENT-USERNAME       PIC X(20).
        01 WS-CURRENT-PASSWORD       PIC X(12).
+       01 WS-INPUT-PASSWORD         PIC X(64).
 
        01 WS-FOUND                  PIC X VALUE "N".
           88 USERNAME-FOUND         VALUE "Y".
@@ -100,7 +101,7 @@
            PERFORM TOP-LEVEL-MENU
                UNTIL EXIT-YES OR EOF-YES
 
-           MOVE "Program Terminated Successfully" TO WS-OUTLINE
+           MOVE "--- END_OF_PROGRAM_EXECUTION ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
            PERFORM CLOSE-FILES
@@ -164,10 +165,8 @@
        REQUIRE-INPUT.
            PERFORM GET-NEXT-INPUT
            IF EOF-YES
-                   MOVE "ERR: Unexpected end of input script." 
-                   TO WS-OUTLINE
-               PERFORM PRINT-LINE
-               STOP RUN
+                   SET EXIT-YES TO TRUE
+                   EXIT PARAGRAPH
            END-IF
            PERFORM ECHO-INPUT.
 
@@ -325,7 +324,7 @@
            MOVE "Please enter your password:" TO WS-OUTLINE
            PERFORM PRINT-LINE
            PERFORM REQUIRE-INPUT
-           MOVE FUNCTION TRIM(WS-INLINE) TO WS-CURRENT-PASSWORD
+           MOVE FUNCTION TRIM(WS-INLINE) TO WS-INPUT-PASSWORD
 
            PERFORM VALIDATE-PASSWORD
            IF PASSWORD-INVALID
@@ -357,8 +356,9 @@
            MOVE "N" TO WS-HAS-SPECIAL
            SET PASSWORD-INVALID TO TRUE
 
-           MOVE FUNCTION LENGTH(FUNCTION TRIM(WS-INLINE)) 
-           TO WS-PASS-LEN
+      *> Calculate actual password length using STORED-CHAR-LENGTH
+           COMPUTE WS-PASS-LEN = 
+               FUNCTION STORED-CHAR-LENGTH(WS-INPUT-PASSWORD)
 
            IF WS-PASS-LEN < 8 OR WS-PASS-LEN > 12
                    MOVE "Password must be between 8 and 12 characters." 
@@ -369,7 +369,7 @@
 
            PERFORM VARYING WS-CHAR-IDX FROM 1 BY 1
                UNTIL WS-CHAR-IDX > WS-PASS-LEN
-               MOVE WS-CURRENT-PASSWORD(WS-CHAR-IDX:1) TO WS-CHAR
+               MOVE WS-INPUT-PASSWORD(WS-CHAR-IDX:1) TO WS-CHAR
 
                IF WS-CHAR >= "A" AND WS-CHAR <= "Z"
                    MOVE "Y" TO WS-HAS-UPPER
@@ -409,6 +409,7 @@
                EXIT PARAGRAPH
            END-IF
 
+           MOVE WS-INPUT-PASSWORD TO WS-CURRENT-PASSWORD
            SET PASSWORD-VALID TO TRUE.
 
       *> user authentication with unlimited attempts
@@ -466,10 +467,14 @@
       *> what happens after login 
 
        AFTER-LOGIN.
-           MOVE "Welcome, " TO WS-OUTLINE
-           PERFORM PRINT-LINE
-
-           MOVE FUNCTION TRIM(WS-CURRENT-USERNAME) TO WS-OUTLINE
+           MOVE SPACES TO WS-OUTLINE
+           STRING
+           "Welcome, " DELIMITED BY SIZE 
+           FUNCTION TRIM(WS-CURRENT-USERNAME)
+           DELIMITED BY SIZE 
+           "!" DELIMITED BY SIZE
+           INTO WS-OUTLINE
+           END-STRING
            PERFORM PRINT-LINE
 
            PERFORM AFTER-LOGIN-MENU UNTIL EXIT-YES OR EOF-YES.
@@ -500,6 +505,18 @@
                    PERFORM PRINT-LINE
                WHEN "3"
                    PERFORM LEARN-A-SKILL
+                WHEN "4" 
+                   SET EXIT-YES TO TRUE
+               WHEN "Logout"
+                   SET EXIT-YES TO TRUE
+               WHEN "log out"
+                   SET EXIT-YES TO TRUE
+               WHEN "logout"
+                   SET EXIT-YES TO TRUE
+               WHEN "Log out"
+                   SET EXIT-YES TO TRUE
+               WHEN "Log Out" 
+                   SET EXIT-YES TO TRUE
                WHEN OTHER
                    MOVE "Invalid choice." TO WS-OUTLINE
                    PERFORM PRINT-LINE
@@ -525,7 +542,14 @@
 
            PERFORM REQUIRE-INPUT
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-
+            IF WS-TRIMMED = "Logout" 
+               OR WS-TRIMMED = "logout" OR
+               WS-TRIMMED = "log out" OR
+               WS-TRIMMED = "Log out" OR
+               WS-TRIMMED = "Log Out"
+                   SET EXIT-YES TO TRUE
+                   EXIT PARAGRAPH
+           END-IF
            IF WS-TRIMMED = "Go Back" OR WS-TRIMMED = "6" 
                    OR WS-TRIMMED = "back"
                EXIT PARAGRAPH
