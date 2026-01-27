@@ -198,6 +198,9 @@
            PERFORM PRINT-LINE
 
            PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+              EXIT PARAGRAPH
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
 
       *> Support both number and text input
@@ -310,6 +313,9 @@
            MOVE "Please enter your username:" TO WS-OUTLINE
            PERFORM PRINT-LINE
            PERFORM REQUIRE-INPUT
+            IF EXIT-YES OR EOF-YES
+              EXIT PARAGRAPH
+            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-CURRENT-USERNAME
 
            PERFORM CHECK-USERNAME-EXISTS
@@ -324,6 +330,9 @@
            MOVE "Please enter your password:" TO WS-OUTLINE
            PERFORM PRINT-LINE
            PERFORM REQUIRE-INPUT
+            IF EXIT-YES OR EOF-YES
+              EXIT PARAGRAPH
+            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-INPUT-PASSWORD
 
            PERFORM VALIDATE-PASSWORD
@@ -427,17 +436,23 @@
                MOVE "Please enter your username:" TO WS-OUTLINE
                PERFORM PRINT-LINE
                PERFORM REQUIRE-INPUT
+               IF EXIT-YES OR EOF-YES
+                  EXIT PARAGRAPH
+               END-IF
                MOVE FUNCTION TRIM(WS-INLINE) TO WS-CURRENT-USERNAME
 
                MOVE "Please enter your password:" TO WS-OUTLINE
                PERFORM PRINT-LINE
                PERFORM REQUIRE-INPUT
+               IF EXIT-YES OR EOF-YES
+                  EXIT PARAGRAPH
+               END-IF
                MOVE FUNCTION TRIM(WS-INLINE) TO WS-CURRENT-PASSWORD
 
                PERFORM CHECK-CREDENTIALS
 
                IF USERNAME-FOUND
-                   MOVE "You have successfully logged in." TO WS-OUTLINE
+                   MOVE "You have successfully logged in" TO WS-OUTLINE
                    PERFORM PRINT-LINE
                    PERFORM AFTER-LOGIN
                ELSE
@@ -486,10 +501,15 @@
            PERFORM PRINT-LINE
            MOVE "3. Learn a new skill" TO WS-OUTLINE
            PERFORM PRINT-LINE
+           MOVE "4. Logout" TO WS-OUTLINE
+           PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
            PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+              EXIT PARAGRAPH
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
 
            EVALUATE WS-TRIMMED
@@ -541,6 +561,9 @@
            PERFORM PRINT-LINE
 
            PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+              EXIT PARAGRAPH
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
             IF WS-TRIMMED = "Logout" 
                OR WS-TRIMMED = "logout" OR
