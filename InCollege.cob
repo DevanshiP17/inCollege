@@ -501,8 +501,6 @@
            PERFORM PRINT-LINE
            MOVE "3. Learn a new skill" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "4. Logout" TO WS-OUTLINE
-           PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
