@@ -1,0 +1,21 @@
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+5
+Invalid choice.
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+invalid
+Invalid choice.
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+3
+Program Terminated Successfully

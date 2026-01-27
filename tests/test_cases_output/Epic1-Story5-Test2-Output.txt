@@ -1,0 +1,35 @@
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+2
+Please enter your username:
+alex
+Please enter your password:
+Secure99!
+Account created successfully!
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+1
+Please enter your username:
+wronguser
+Please enter your password:
+Secure99!
+Incorrect username/password, please try again
+Please enter your username:
+alex
+Please enter your password:
+Secure99!
+You have successfully logged in.
+Welcome, 
+alex
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+Enter your choice:
+3
+Program Terminated Successfully

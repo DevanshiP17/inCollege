@@ -1,0 +1,18 @@
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+2
+Please enter your username:
+testuser1
+Please enter your password:
+Passw0rd!
+Account created successfully!
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+3
+Program Terminated Successfully

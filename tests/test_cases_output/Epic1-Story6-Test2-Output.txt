@@ -1,0 +1,36 @@
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+2
+Please enter your username:
+lisa
+Please enter your password:
+Test789!
+Account created successfully!
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+1
+Please enter your username:
+lisa
+Please enter your password:
+Test789!
+You have successfully logged in.
+Welcome, 
+lisa
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+Enter your choice:
+2
+Find someone you know is under construction.
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+Enter your choice:
+3
+Program Terminated Successfully

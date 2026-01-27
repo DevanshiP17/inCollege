@@ -1,0 +1,74 @@
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+2
+Please enter your username:
+emma
+Please enter your password:
+Valid88!
+Account created successfully!
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+1
+Please enter your username:
+emma
+Please enter your password:
+Valid88!
+You have successfully logged in.
+Welcome, 
+emma
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+Enter your choice:
+3
+Learn a New Skill:
+Skill 1
+Skill 2
+Skill 3
+Skill 4
+Skill 5
+Go Back
+Enter your choice:
+2
+This skill is under construction.
+Learn a New Skill:
+Skill 1
+Skill 2
+Skill 3
+Skill 4
+Skill 5
+Go Back
+Enter your choice:
+3
+This skill is under construction.
+Learn a New Skill:
+Skill 1
+Skill 2
+Skill 3
+Skill 4
+Skill 5
+Go Back
+Enter your choice:
+5
+This skill is under construction.
+Learn a New Skill:
+Skill 1
+Skill 2
+Skill 3
+Skill 4
+Skill 5
+Go Back
+Enter your choice:
+Go Back
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+Enter your choice:
+3
+Program Terminated Successfully

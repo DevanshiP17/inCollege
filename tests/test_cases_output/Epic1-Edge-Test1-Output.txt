@@ -1,0 +1,14 @@
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+1
+Incorrect username/password, please try again
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+3
+Program Terminated Successfully

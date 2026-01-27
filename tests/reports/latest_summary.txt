@@ -1,0 +1,26 @@
+InCollege Test Execution Summary
+Generated: 2026-01-26 19:23:34
+========================================
+
+Total Tests:  22
+Passed:       8
+Failed:       14
+Pass Rate:    36.4%
+
+Failed Tests:
+  - Epic1-Edge-Test2
+  - Epic1-Edge-Test3
+  - Epic1-Story10-Test1
+  - Epic1-Story2-Test1
+  - Epic1-Story2-Test2
+  - Epic1-Story3-Test1
+  - Epic1-Story4-Test1
+  - Epic1-Story5-Test1
+  - Epic1-Story5-Test2
+  - Epic1-Story6-Test1
+  - Epic1-Story6-Test2
+  - Epic1-Story7-Test1
+  - Epic1-Story8-Test1
+  - Epic1-Story9-Test2
+
+Full Report: /Users/devanshipande/Desktop/InCollege/tests/reports/test_report_2026-01-26_19-23-33.md

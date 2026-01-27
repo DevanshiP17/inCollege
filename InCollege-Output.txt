@@ -1,0 +1,35 @@
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+Create New Account
+Please enter your username:
+alice
+Please enter your password:
+Super8@Pass
+Account created successfully!
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+Log In
+Please enter your username:
+alice
+Please enter your password:
+Super8@Pass
+You have successfully logged in.
+Welcome,
+alice
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+Enter your choice:
+Logout
+Invalid choice.
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+Enter your choice:
+ERR: Unexpected end of input script.
