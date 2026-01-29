@@ -99,7 +99,9 @@
       
       *> Profile set-up
        01 WS-PROFILE.
-          05 WS-P-NAME        PIC X(30)  VALUE SPACES.
+          05 WS-P-NAME        PIC X(30).
+             10 WS-P-FNAME  PIC X(15) VALUE SPACES.
+             10 WS-P-LNAME PIC X(15) VALUE SPACES. 
           05 WS-P-MAJOR       PIC X(30)  VALUE SPACES.
           05 WS-P-UNIVERSITY  PIC X(30)  VALUE SPACES.
           05 WS-P-GRAD-YEAR   PIC X(4)   VALUE SPACES.
