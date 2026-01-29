@@ -503,6 +503,25 @@
                END-IF
            END-PERFORM.
 
+      *> core profile setup with menus
+       CORE-PROFILE-ROUTINE.
+           MOVE "First Name: " TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "Last Name: " TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "University/College Attended: " TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "Major: " TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "Graduation Year: " TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "About Me: " TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "Experience: " TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "Education: " TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
       *> what happens after login 
 
        AFTER-LOGIN.
@@ -519,11 +538,15 @@
            PERFORM AFTER-LOGIN-MENU UNTIL EXIT-YES OR EOF-YES.
 
        AFTER-LOGIN-MENU.
-           MOVE "1. Search for a job" TO WS-OUTLINE
+           MOVE "1. Create/Edit My Profile" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "2. Find someone you know" TO WS-OUTLINE
+           MOVE "2. View My Profile" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "3. Learn a new skill" TO WS-OUTLINE
+           MOVE "3. Search for a job" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "4. Find someone you know" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "5. Learn a New Skill" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-LINE
@@ -534,12 +557,11 @@
            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
 
+          *> THIS IS UNDER CONSTRUCTION RIGHT NOW, CORE PROFILE ROUTINE WIP
+           
            EVALUATE WS-TRIMMED
                WHEN "1"
-                       MOVE 
-                       "Job search/internship is under construction."
-                       TO WS-OUTLINE
-                   PERFORM PRINT-LINE
+                       PERFORM CORE-PROFILE-ROUTINE
                WHEN "2"
                        MOVE 
                        "Find someone you know is under construction." 
