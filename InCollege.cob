@@ -99,25 +99,25 @@
       
       *> Profile set-up
        01 WS-PROFILE.
-          05 WS-P-NAME        PIC X(30).
-             10 WS-P-FNAME  PIC X(15) VALUE SPACES.
-             10 WS-P-LNAME PIC X(15) VALUE SPACES. 
-          05 WS-P-MAJOR       PIC X(30)  VALUE SPACES.
-          05 WS-P-UNIVERSITY  PIC X(30)  VALUE SPACES.
+          05 WS-P-NAME        PIC X(40).
+             10 WS-P-FNAME  PIC X(20) VALUE SPACES.
+             10 WS-P-LNAME PIC X(20) VALUE SPACES. 
+          05 WS-P-MAJOR       PIC X(40)  VALUE SPACES.
+          05 WS-P-UNIVERSITY  PIC X(40)  VALUE SPACES.
           05 WS-P-GRAD-YEAR   PIC X(4)   VALUE SPACES.
-          05 WS-P-ABOUT       PIC X(200) VALUE SPACES.
+          05 WS-P-ABOUT       PIC X(250) VALUE SPACES.
       *> Education related information
           05 WS-P-EDU.
              10 WS-EDU OCCURS 3 TIMES.
-                15 WS-EDU-SCHOOL  PIC X(30) VALUE SPACES.
-                15 WS-EDU-DEGREE  PIC X(30) VALUE SPACES.
+                15 WS-EDU-SCHOOL  PIC X(40) VALUE SPACES.
+                15 WS-EDU-DEGREE  PIC X(40) VALUE SPACES.
                 15 WS-EDU-YEAR    PIC X(4)  VALUE SPACES.
       *> Work related information
           05 WS-P-WORK.
              10 WS-WORK OCCURS 3 TIMES.
-                15 WS-WORK-TITLE     PIC X(30) VALUE SPACES.
-                15 WS-WORK-EMPLOYER  PIC X(30) VALUE SPACES.
-                15 WS-WORK-YEARS     PIC X(15) VALUE SPACES.
+                15 WS-WORK-TITLE     PIC X(40) VALUE SPACES.
+                15 WS-WORK-EMPLOYER  PIC X(40) VALUE SPACES.
+                15 WS-WORK-YEARS     PIC X(20) VALUE SPACES.
 
        PROCEDURE DIVISION.
        MAIN.
