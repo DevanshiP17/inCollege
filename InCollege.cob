@@ -506,7 +506,7 @@
                END-IF
            END-PERFORM.
 
-      *> core profile setup with menus
+      *> core profile setup with menus. STILL NEED ACCOUNT PERSISTENCE STUFF
        CORE-PROFILE-ROUTINE.
 
            MOVE "First Name: " TO WS-OUTLINE
@@ -606,13 +606,34 @@
               ADD 1 TO WS-I
            END-PERFORM.
 
+          *> EDUCATION, STILL UNDER CONSTRUCTION TO MATCH PROJECT SPECS
+          *> MOVE 1 TO WS-I
+          *>MOVE "Education: " TO WS-OUTLINE
+          *> PERFORM PRINT-LINE
+          *> PERFORM UNTIL WS-I = 3
+          *>    MOVE "Degree: " TO WS-OUTLINE
+          *>    PERFORM PRINT-LINE
+          *>    PERFORM REQUIRE-INPUT
+          *>    IF FUNCTION TRIM(WS-INLINE) = "DONE"
+          *>       EXIT PARAGRAPH
+          *>    END-IF
+           
+          *>    MOVE "University: " TO WS-OUTLINE
+          *>    PERFORM PRINT-LINE
+          *>   PERFORM REQUIRE-INPUT
+          *>    IF FUNCTION TRIM(WS-INLINE) = "DONE"
+          *>       EXIT PARAGRAPH
+          *>    END-IF
+          *> modify this to match format
+          *>    MOVE "Years: " TO WS-OUTLINE
+          *>    PERFORM PRINT-LINE
+          *>    PERFORM REQUIRE-INPUT
+          *>    IF FUNCTION TRIM(WS-INLINE) = "DONE"
+          *>       EXIT PARAGRAPH
+          *>    END-IF
 
+           
 
-
-
-
-        *>   MOVE "Education: " TO WS-OUTLINE
-        *>   PERFORM PRINT-LINE
        
 
       *> what happens after login 
