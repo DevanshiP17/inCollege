@@ -507,16 +507,54 @@
 
       *> core profile setup with menus
        CORE-PROFILE-ROUTINE.
+
            MOVE "First Name: " TO WS-OUTLINE
            PERFORM PRINT-LINE
+           PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+            END-IF
+           MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-P-FNAME
+
            MOVE "Last Name: " TO WS-OUTLINE
            PERFORM PRINT-LINE
+           PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+            END-IF
+           MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-P-LNAME
+
            MOVE "University/College Attended: " TO WS-OUTLINE
            PERFORM PRINT-LINE
+           PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+            END-IF
+           MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-P-UNIVERSITY
+           
            MOVE "Major: " TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "Graduation Year: " TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+            END-IF
+           MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-P-MAJOR
+           
+           PERFORM UNTIL (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4)
+              MOVE "Graduation Year: " TO WS-OUTLINE
+              PERFORM PRINT-LINE
+              PERFORM REQUIRE-INPUT
+              IF EXIT-YES OR EOF-YES
+                  EXIT PARAGRAPH
+              END-IF
+              MOVE FUNCTION TRIM(WS-INLINE) TO WS-P-GRAD-YEAR
+              IF NOT (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4)
+                 MOVE "Invalid year." TO WS-OUTLINE
+                 PERFORM PRINT-LINE
+                 MOVE SPACES TO WS-P-GRAD-YEAR
+              END-IF
+            END-PERFORM
+        *> BELOW STILL UNDER CONSTRUCTION
            MOVE "About Me: " TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Experience: " TO WS-OUTLINE
