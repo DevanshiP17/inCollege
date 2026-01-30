@@ -105,19 +105,20 @@
           05 WS-P-MAJOR       PIC X(40)  VALUE SPACES.
           05 WS-P-UNIVERSITY  PIC X(40)  VALUE SPACES.
           05 WS-P-GRAD-YEAR   PIC X(4)   VALUE SPACES.
-          05 WS-P-ABOUT       PIC X(250) VALUE SPACES.
+          05 WS-P-ABOUT       PIC X(200) VALUE SPACES.
       *> Education related information
           05 WS-P-EDU.
              10 WS-EDU OCCURS 3 TIMES.
-                15 WS-EDU-SCHOOL  PIC X(40) VALUE SPACES.
                 15 WS-EDU-DEGREE  PIC X(40) VALUE SPACES.
+                15 WS-EDU-SCHOOL  PIC X(40) VALUE SPACES.
                 15 WS-EDU-YEAR    PIC X(4)  VALUE SPACES.
       *> Work related information
           05 WS-P-WORK.
              10 WS-WORK OCCURS 3 TIMES.
                 15 WS-WORK-TITLE     PIC X(40) VALUE SPACES.
                 15 WS-WORK-EMPLOYER  PIC X(40) VALUE SPACES.
-                15 WS-WORK-YEARS     PIC X(20) VALUE SPACES.
+                15 WS-WORK-DATES     PIC X(40) VALUE SPACES.
+                15 WS-WORK-DESC      PIC X(100) VALUE SPACES.
 
        PROCEDURE DIVISION.
        MAIN.
@@ -554,11 +555,58 @@
                  MOVE SPACES TO WS-P-GRAD-YEAR
               END-IF
             END-PERFORM.
-        *> BELOW STILL UNDER CONSTRUCTION
-        *>   MOVE "About Me: " TO WS-OUTLINE
-        *>   PERFORM PRINT-LINE
-        *>   MOVE "Experience: " TO WS-OUTLINE
-        *>   PERFORM PRINT-LINE
+        *> BELOW STILL UNDER CONSTRUCTION, AFTER ACCOUNT PERSISTENCE ADDED, WILL NEED TO MODIFY
+           MOVE "About Me(optional, max 200 chars, Enter blank line to skip): " 
+           TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
+           MOVE FUNCTION TRIM(WS-INLINE) TO WS-P-ABOUT
+
+           MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):" 
+           TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
+           MOVE 1 TO WS-I.
+
+           PERFORM UNTIL WS-I = 3 OR FUNCTION TRIM(WS-INLINE) = "DONE"
+              MOVE "Title: " TO WS-OUTLINE
+              PERFORM REQUIRE-INPUT
+              IF FUNCTION TRIM(WS-INLINE) = "DONE"
+                 EXIT PARAGRAPH
+              END-IF
+              MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-TITLE(WS-I)
+
+              MOVE "Company: " TO WS-OUTLINE
+              PERFORM REQUIRE-INPUT
+              IF FUNCTION TRIM(WS-INLINE) = "DONE"
+                 EXIT PARAGRAPH
+              END-IF
+              MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-EMPLOYER(WS-I)
+
+              MOVE "Dates: " TO WS-OUTLINE
+              PERFORM REQUIRE-INPUT
+              IF FUNCTION TRIM(WS-INLINE) = "DONE"
+                 EXIT PARAGRAPH
+              END-IF
+              MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-DATES(WS-I)
+
+              MOVE "Description: " TO WS-OUTLINE
+              PERFORM REQUIRE-INPUT
+              IF FUNCTION TRIM(WS-INLINE) = "DONE"
+                 EXIT PARAGRAPH
+              END-IF
+              MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-DESC(Ws-I)
+              ADD 1 TO WS-I
+           END-PERFORM.
+
+
+
+
+
+
         *>   MOVE "Education: " TO WS-OUTLINE
         *>   PERFORM PRINT-LINE
        
