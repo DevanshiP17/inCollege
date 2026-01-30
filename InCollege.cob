@@ -99,7 +99,7 @@
       
       *> Profile set-up
        01 WS-PROFILE.
-          05 WS-P-NAME        PIC X(40).
+          05 WS-P-NAME.
              10 WS-P-FNAME  PIC X(20) VALUE SPACES.
              10 WS-P-LNAME PIC X(20) VALUE SPACES. 
           05 WS-P-MAJOR       PIC X(40)  VALUE SPACES.
@@ -560,7 +560,8 @@
            MOVE "Experience: " TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Education: " TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-LINE.
+       
 
       *> what happens after login 
 
