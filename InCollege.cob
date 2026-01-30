@@ -553,14 +553,14 @@
                  PERFORM PRINT-LINE
                  MOVE SPACES TO WS-P-GRAD-YEAR
               END-IF
-            END-PERFORM
+            END-PERFORM.
         *> BELOW STILL UNDER CONSTRUCTION
-           MOVE "About Me: " TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Experience: " TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Education: " TO WS-OUTLINE
-           PERFORM PRINT-LINE.
+        *>   MOVE "About Me: " TO WS-OUTLINE
+        *>   PERFORM PRINT-LINE
+        *>   MOVE "Experience: " TO WS-OUTLINE
+        *>   PERFORM PRINT-LINE
+        *>   MOVE "Education: " TO WS-OUTLINE
+        *>   PERFORM PRINT-LINE
        
 
       *> what happens after login 
@@ -602,16 +602,21 @@
            
            EVALUATE WS-TRIMMED
                WHEN "1"
-                       PERFORM CORE-PROFILE-ROUTINE
+                   PERFORM CORE-PROFILE-ROUTINE
                WHEN "2"
-                       MOVE 
-                       "Find someone you know is under construction." 
-                       TO WS-OUTLINE
+                   MOVE "Will need to implement this later... "
+                   TO WS-OUTLINE
                    PERFORM PRINT-LINE
                WHEN "3"
-                   PERFORM LEARN-A-SKILL
+                   MOVE "This section is currently under construction"
+                   TO WS-OUTLINE
+                   PERFORM PRINT-LINE
                 WHEN "4" 
-                   SET EXIT-YES TO TRUE
+                   MOVE "This section is currently under construction"
+                   TO WS-OUTLINE
+                   PERFORM PRINT-LINE
+               WHEN "5"
+                   PERFORM LEARN-A-SKILL
                WHEN "Logout"
                    SET EXIT-YES TO TRUE
                WHEN "log out"
