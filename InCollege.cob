@@ -573,6 +573,7 @@
 
            PERFORM UNTIL WS-I = 3 OR FUNCTION TRIM(WS-INLINE) = "DONE"
               MOVE "Title: " TO WS-OUTLINE
+              PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
               IF FUNCTION TRIM(WS-INLINE) = "DONE"
                  EXIT PARAGRAPH
@@ -580,6 +581,7 @@
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-TITLE(WS-I)
 
               MOVE "Company: " TO WS-OUTLINE
+              PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
               IF FUNCTION TRIM(WS-INLINE) = "DONE"
                  EXIT PARAGRAPH
@@ -587,6 +589,7 @@
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-EMPLOYER(WS-I)
 
               MOVE "Dates: " TO WS-OUTLINE
+              PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
               IF FUNCTION TRIM(WS-INLINE) = "DONE"
                  EXIT PARAGRAPH
@@ -594,6 +597,7 @@
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-DATES(WS-I)
 
               MOVE "Description: " TO WS-OUTLINE
+              PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
               IF FUNCTION TRIM(WS-INLINE) = "DONE"
                  EXIT PARAGRAPH
