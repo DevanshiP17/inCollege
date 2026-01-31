@@ -508,6 +508,7 @@
 
       *> core profile setup with menus. STILL NEED ACCOUNT PERSISTENCE STUFF
        CORE-PROFILE-ROUTINE.
+      *>   PERFORM LOAD-PROFILE
 
            MOVE "First Name: " TO WS-OUTLINE
            PERFORM PRINT-LINE
@@ -628,6 +629,8 @@
           *>    IF FUNCTION TRIM(WS-INLINE) = "DONE"
           *>       EXIT PARAGRAPH
           *>    END-IF
+          *>    PERFORM SAVE-PROFILE.
+          *>    DISPLAY "
 
            
 
@@ -647,6 +650,12 @@
            PERFORM PRINT-LINE
 
            PERFORM AFTER-LOGIN-MENU UNTIL EXIT-YES OR EOF-YES.
+          *> line below resets EXIT-YES flag used by top-level menu and main
+          *> so that whole program does not end when log out is done at 
+          *> after log in menu
+           IF EXIT-YES AND NOT EOF-YES
+               SET EXIT-NO TO true
+           END-IF.
 
        AFTER-LOGIN-MENU.
            MOVE "1. Create/Edit My Profile" TO WS-OUTLINE
