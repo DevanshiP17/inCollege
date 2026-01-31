@@ -541,8 +541,9 @@
             END-IF
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-P-MAJOR
            
-           PERFORM UNTIL (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4)
-              MOVE "Graduation Year: " TO WS-OUTLINE
+           PERFORM UNTIL (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4) 
+           AND FUNCTION TRIM(WS-P-GRAD-YEAR) IS NUMERIC
+              MOVE "Graduation Year (YYYY): " TO WS-OUTLINE
               PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
               IF EXIT-YES OR EOF-YES
@@ -550,6 +551,7 @@
               END-IF
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-P-GRAD-YEAR
               IF NOT (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4)
+              OR NOT (FUNCTION TRIM(WS-P-GRAD-YEAR) IS NUMERIC)
                  MOVE "Invalid year." TO WS-OUTLINE
                  PERFORM PRINT-LINE
                  MOVE SPACES TO WS-P-GRAD-YEAR
@@ -565,44 +567,39 @@
            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-P-ABOUT
 
-           MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):" 
-           TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           MOVE 1 TO WS-I
 
-           MOVE 1 TO WS-I.
-
-           PERFORM UNTIL WS-I = 3 OR FUNCTION TRIM(WS-INLINE) = "DONE"
+           PERFORM UNTIL WS-I > 3
+              MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):" 
+              TO WS-OUTLINE
+              PERFORM PRINT-LINE
               MOVE "Title: " TO WS-OUTLINE
               PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
-              IF FUNCTION TRIM(WS-INLINE) = "DONE"
-                 EXIT PARAGRAPH
+          *> only check if user is "done" at beginning
+              MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+              IF FUNCTION UPPER-CASE(WS-TRIMMED) = "DONE"
+                 EXIT PERFORM
               END-IF
-              MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-TITLE(WS-I)
+              MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-TITLE(WS-I)
 
               MOVE "Company: " TO WS-OUTLINE
               PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
-              IF FUNCTION TRIM(WS-INLINE) = "DONE"
-                 EXIT PARAGRAPH
-              END-IF
-              MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-EMPLOYER(WS-I)
+
+              MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-EMPLOYER(WS-I)
 
               MOVE "Dates: " TO WS-OUTLINE
               PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
-              IF FUNCTION TRIM(WS-INLINE) = "DONE"
-                 EXIT PARAGRAPH
-              END-IF
-              MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-DATES(WS-I)
+
+              MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-WORK-DATES(WS-I)
 
               MOVE "Description: " TO WS-OUTLINE
               PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
-              IF FUNCTION TRIM(WS-INLINE) = "DONE"
-                 EXIT PARAGRAPH
-              END-IF
-              MOVE FUNCTION TRIM(WS-INLINE) TO WS-WORK-DESC(Ws-I)
+
+              MOVE FUNCTION TRIM(WS-INLINE)(1:100) TO WS-WORK-DESC(Ws-I)
               ADD 1 TO WS-I
            END-PERFORM.
 
@@ -610,7 +607,7 @@
           *> MOVE 1 TO WS-I
           *>MOVE "Education: " TO WS-OUTLINE
           *> PERFORM PRINT-LINE
-          *> PERFORM UNTIL WS-I = 3
+          *> PERFORM UNTIL WS-I > 3
           *>    MOVE "Degree: " TO WS-OUTLINE
           *>    PERFORM PRINT-LINE
           *>    PERFORM REQUIRE-INPUT
