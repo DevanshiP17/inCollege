@@ -600,7 +600,7 @@
               PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
 
-              MOVE FUNCTION TRIM(WS-INLINE)(1:100) TO WS-WORK-DESC(Ws-I)
+              MOVE FUNCTION TRIM(WS-INLINE)(1:200) TO WS-WORK-DESC(WS-I)
               ADD 1 TO WS-I
            END-PERFORM.
 
