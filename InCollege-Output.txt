@@ -3,12 +3,73 @@ Log In
 Create New Account
 Logout
 Enter your choice:
-Create New Account
+2
 Please enter your username:
-alice
+kevin6
 Please enter your password:
-Super8@Pass
+Valid77!
 Account created successfully!
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
+Enter your choice:
+1
+Please enter your username:
+kevin6
+Please enter your password:
+Valid77!
+You have successfully logged in
+Welcome, kevin6!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+1
+First Name:
+Kevin
+Last Name:
+Doe
+University/College Attended:
+University of South Florida
+Major:
+Computer Science
+Graduation Year (YYYY):
+2025
+About Me(optional, max 200 chars, Enter blank line to skip):
+Interested in AI and machine learning
+Experience (optional, max 3 entries. Enter 'DONE' to finish):
+Title:
+Software Intern
+Company:
+Google
+Dates:
+Summer 2024
+Description:
+Built cloud tools
+Experience (optional, max 3 entries. Enter 'DONE' to finish):
+Title:
+DONE
+Add Education (optional, max 3 entries. Enter 'DONE' to finish):
+Degree:
+Bachelor of Science
+University/College:
+University of South Florida
+Years Attended (e.g., 2023-2025):
+2021-2025
+Add Education (optional, max 3 entries. Enter 'DONE' to finish):
+Degree:
+DONE
+Profile saved successfully!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Logout
 Welcome to InCollege!
 Log In
 Create New Account
@@ -16,20 +77,47 @@ Logout
 Enter your choice:
 Log In
 Please enter your username:
-alice
+kevin6
 Please enter your password:
-Super8@Pass
-You have successfully logged in.
-Welcome,
-alice
-1. Search for a job
-2. Find someone you know
-3. Learn a new skill
+Valid77!
+You have successfully logged in
+Welcome, kevin6!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+2
+--- Your Profile ---
+Name: Kevin Doe
+University: University of South Florida
+Major: Computer Science
+Graduation Year: 2025
+About Me: Interested in AI and machine learning
+
+Work Experience:
+  Title: Software Intern
+  Company: Google
+  Dates: Summer 2024
+  Description: Built cloud tools
+
+Education:
+  Degree: Bachelor of Science
+  University: University of South Florida
+  Years: 2021
+
+--------------------
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
 Enter your choice:
 Logout
-Invalid choice.
-1. Search for a job
-2. Find someone you know
-3. Learn a new skill
+Welcome to InCollege!
+Log In
+Create New Account
+Logout
 Enter your choice:
-ERR: Unexpected end of input script.
+--- END_OF_PROGRAM_EXECUTION ---

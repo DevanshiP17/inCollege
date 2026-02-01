@@ -1,7 +1,28 @@
-Create New Account
-alice
-Super8@Pass
+2
+kevin6
+Valid77!
+1
+kevin6
+Valid77!
+1
+Kevin
+Doe
+University of South Florida
+Computer Science
+2025
+Interested in AI and machine learning
+Software Intern
+Google
+Summer 2024
+Built cloud tools
+DONE
+Bachelor of Science
+University of South Florida
+2021-2025
+DONE
+Logout
 Log In
-alice
-Super8@Pass
+kevin6
+Valid77!
+2
 Logout
