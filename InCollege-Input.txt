@@ -9,16 +9,11 @@ John
 Doe
 University of South Florida
 Computer Science
-2025
+2027
 
-Software Intern
-Tech Corp
-Summer 2024
-Developed tools for internal testing.
 DONE
 Bachelor of Science
-Example University
-2021-2025
+University A
 DONE
 2
 Logout
