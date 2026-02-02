@@ -234,16 +234,24 @@
       *> create accounts file if it does not exit
       *> noticed bugs when program had no accounts.dat file present
       *> in directory
-               OPEN OUTPUT ACCT-FILE 
-               IF WS-ACCT-STAT NOT = "00" 
-                   DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
-                   STOP RUN  
-               END-IF 
+               CLOSE ACCT-FILE
+               IF WS-ACCT-STAT = "05" OR WS-ACCT-STAT = "35"
+
+                  OPEN OUTPUT ACCT-FILE
+                
+                  IF WS-ACCT-STAT NOT = "00" 
+                     DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                     STOP RUN  
+                  END-IF 
                CLOSE  ACCT-FILE 
                OPEN INPUT ACCT-FILE 
                IF WS-ACCT-STAT NOT = "00" 
                    DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
                    STOP RUN  
+               END-IF
+               ELSE
+                   DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                   STOP RUN
                END-IF 
            END-IF
            *> Initialize profiles.dat (create if doesn't exist)
