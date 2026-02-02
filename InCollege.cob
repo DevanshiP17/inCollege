@@ -697,6 +697,7 @@
               MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):" 
               TO WS-OUTLINE
               PERFORM PRINT-INLINE
+              MOVE SPACES TO WS-OUTLINE
               STRING 
               "Experience #" DELIMITED BY SIZE 
               WS-I DELIMITED BY SIZE 
@@ -712,6 +713,7 @@
               END-IF
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-TITLE(WS-I)
 
+              MOVE SPACES TO WS-OUTLINE
               STRING 
               "Experience #" DELIMITED BY SIZE 
               WS-I DELIMITED BY SIZE 
@@ -722,7 +724,8 @@
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-EMPLOYER(WS-I)
-
+ 
+              MOVE SPACES TO WS-OUTLINE
               STRING 
               "Experience #" DELIMITED BY SIZE 
               WS-I DELIMITED BY SIZE 
@@ -734,6 +737,7 @@
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-WORK-DATES(WS-I)
               
+              MOVE SPACES TO WS-OUTLINE
               STRING
               "Experience #" DELIMITED BY SIZE 
               WS-I DELIMITED BY SIZE 
@@ -754,7 +758,7 @@
               MOVE "Add Education (optional, max 3 entries. Enter 'DONE' to finish):" 
               TO WS-OUTLINE
               PERFORM PRINT-INLINE
-              
+              MOVE SPACES TO WS-OUTLINE
               STRING 
               "Education #" DELIMITED BY SIZE 
               WS-I DELIMITED BY SIZE 
@@ -770,7 +774,8 @@
                  EXIT PERFORM
               END-IF
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-EDU-DEGREE(WS-I)
-
+              
+              MOVE SPACES TO WS-OUTLINE
               STRING 
               "Education #" DELIMITED BY SIZE 
               WS-I DELIMITED BY SIZE 
@@ -781,7 +786,8 @@
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-EDU-SCHOOL(WS-I)
-
+ 
+              MOVE SPACES TO WS-OUTLINE
               STRING 
               "Education #" DELIMITED BY SIZE 
               WS-I DELIMITED BY SIZE 
