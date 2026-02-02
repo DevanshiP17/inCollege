@@ -70,6 +70,11 @@
        01 WS-EOF-FLAG PIC X VALUE "N".
           88 EOF-YES VALUE "Y".
           88 EOF-NO  VALUE "N".
+      *> had to add a dedicated eof flag for accounts file due to issue
+      *> with WS-EOF-FLAG reuse between paragraphs
+       01 WS-ACCT_EOF-FLAG PIC X VALUE "N".
+          88 ACCT-EOF-YES VALUE "Y".
+          88 ACCT-EOF-NO  VALUE "N".
 
        01 WS-EXIT-FLAG PIC X VALUE "N".
           88 EXIT-YES VALUE "Y".
@@ -221,22 +226,26 @@
                    WS-OUT-STAT
                STOP RUN
            END-IF
-
+          
            OPEN INPUT ACCT-FILE
            IF WS-ACCT-STAT = "00"
-      *> File exists, already open for input
                CONTINUE
-           ELSE
-      *> File does not exist, create it
-               OPEN OUTPUT ACCT-FILE
-               IF WS-ACCT-STAT NOT = "00"
-                       DISPLAY 
-                       "Cannot create accounts.dat. Status=" 
-                       WS-ACCT-STAT
-                   STOP RUN
-               END-IF
+           ELSE  
+      *> create accounts file if it does not exit
+      *> noticed bugs when program had no accounts.dat file present
+      *> in directory
+               OPEN OUTPUT ACCT-FILE 
+               IF WS-ACCT-STAT NOT = "00" 
+                   DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                   STOP RUN  
+               END-IF 
+               CLOSE  ACCT-FILE 
+               OPEN INPUT ACCT-FILE 
+               IF WS-ACCT-STAT NOT = "00" 
+                   DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                   STOP RUN  
+               END-IF 
            END-IF
-           
            *> Initialize profiles.dat (create if doesn't exist)
            OPEN INPUT PROFILES-FILE
            IF PROFILES-STATUS = "00"
@@ -340,19 +349,21 @@
            END-EVALUATE.
 
       *> account persistence
-
+      *> MODIFIED THIS TO USE ACCT-EOF* instead of just EOF* and clearing account # memory
        LOAD-ACCOUNTS-FROM-FILE.
+           MOVE 0 TO WS-ACCOUNT-COUNT
+           MOVE SPACES TO WS-ACCOUNTS
            IF WS-ACCT-STAT = "35"
                EXIT PARAGRAPH
            END-IF
 
-           SET EOF-NO TO TRUE
+           SET ACCT-EOF-NO TO TRUE
            MOVE 0 TO WS-ACCOUNT-COUNT
 
-           PERFORM UNTIL EOF-YES
+           PERFORM UNTIL ACCT-EOF-YES
                READ ACCT-FILE
                    AT END
-                       SET EOF-YES TO TRUE
+                       SET ACCT-EOF-YES TO TRUE
                    NOT AT END
                        MOVE ACCT-REC TO WS-ACCT-LINE
                        PERFORM PARSE-ACCOUNT-LINE
@@ -360,7 +371,7 @@
            END-PERFORM
 
       *> Reset EOF for normal input reading
-           SET EOF-NO TO TRUE.
+           SET ACCT-EOF-NO TO TRUE.
 
        PARSE-ACCOUNT-LINE.
            IF WS-ACCOUNT-COUNT >= 5
