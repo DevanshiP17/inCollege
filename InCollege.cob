@@ -296,14 +296,14 @@
            MOVE "Welcome to InCollege!" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
-           MOVE "Log In" TO WS-OUTLINE
+           MOVE "1. Log In" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
-           MOVE "Create New Account" TO WS-OUTLINE
+           MOVE "2. Create New Account" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
-           MOVE "Logout" TO WS-OUTLINE
-           PERFORM PRINT-LINE
+       *> removed to match specs of project   
+       *>    MOVE "3. Logout" TO WS-OUTLINE
+       *>    PERFORM PRINT-LINE
 
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-LINE
@@ -588,12 +588,13 @@
                END-IF
            END-PERFORM.
 
-      *> core profile setup with menus. STILL NEED ACCOUNT PERSISTENCE STUFF
+      *> core profile setup with menus and updated account persistence info
        CORE-PROFILE-ROUTINE.
       *>   PERFORM LOAD-PROFILE
            PERFORM LOAD-PROFILE
-
-           MOVE "First Name: " TO WS-OUTLINE
+           MOVE "--- Create/Edit Profile ---" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "Enter First Name: " TO WS-OUTLINE
            PERFORM PRINT-LINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
@@ -601,7 +602,7 @@
             END-IF
            MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-P-FNAME
 
-           MOVE "Last Name: " TO WS-OUTLINE
+           MOVE "Enter Last Name: " TO WS-OUTLINE
            PERFORM PRINT-LINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
@@ -609,7 +610,7 @@
             END-IF
            MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-P-LNAME
 
-           MOVE "University/College Attended: " TO WS-OUTLINE
+           MOVE "Enter University/College Attended: " TO WS-OUTLINE
            PERFORM PRINT-LINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
@@ -617,7 +618,7 @@
             END-IF
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-P-UNIVERSITY
            
-           MOVE "Major: " TO WS-OUTLINE
+           MOVE "Enter Major: " TO WS-OUTLINE
            PERFORM PRINT-LINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
@@ -627,7 +628,7 @@
            
            PERFORM UNTIL (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4) 
            AND FUNCTION TRIM(WS-P-GRAD-YEAR) IS NUMERIC
-              MOVE "Graduation Year (YYYY): " TO WS-OUTLINE
+              MOVE "Enter Graduation Year (YYYY): " TO WS-OUTLINE
               PERFORM PRINT-LINE
               PERFORM REQUIRE-INPUT
               IF EXIT-YES OR EOF-YES
@@ -641,8 +642,8 @@
                  MOVE SPACES TO WS-P-GRAD-YEAR
               END-IF
             END-PERFORM.
-        *> BELOW STILL UNDER CONSTRUCTION, AFTER ACCOUNT PERSISTENCE ADDED, WILL NEED TO MODIFY
-           MOVE "About Me(optional, max 200 chars, Enter blank line to skip): " 
+       
+           MOVE "About Me (optional, max 200 chars, Enter blank line to skip): " 
            TO WS-OUTLINE
            PERFORM PRINT-LINE
            PERFORM REQUIRE-INPUT
@@ -657,8 +658,12 @@
               MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):" 
               TO WS-OUTLINE
               PERFORM PRINT-LINE
-              MOVE "Title: " TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              STRING 
+              "Experience #" DELIMITED BY SIZE 
+              WS-I DELIMITED BY SIZE 
+              " - Title: " DELIMITED BY SIZE
+              INTO WS-OUTLINE
+              END-STRING
               PERFORM REQUIRE-INPUT
           *> only check if user is "done" at beginning
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
@@ -667,23 +672,36 @@
               END-IF
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-TITLE(WS-I)
 
-              MOVE "Company: " TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              STRING 
+              "Experience #" DELIMITED BY SIZE 
+              WS-I DELIMITED BY SIZE 
+              " - Company/Organization: " DELIMITED BY SIZE
+              INTO WS-OUTLINE 
+              END-STRING
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-EMPLOYER(WS-I)
 
-              MOVE "Dates: " TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              STRING 
+              "Experience #" DELIMITED BY SIZE 
+              WS-I DELIMITED BY SIZE 
+              " - Dates (e.g., Summer 2024): " DELIMITED BY SIZE
+              INTO WS-OUTLINE
+              END-STRING
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-WORK-DATES(WS-I)
-
-              MOVE "Description: " TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              
+              STRING
+              "Experience #" DELIMITED BY SIZE 
+              WS-I DELIMITED BY SIZE 
+              " - Description  (optional, max 100 chars, blank to skip): " 
+              DELIMITED BY SIZE
+              INTO WS-OUTLINE
+              END-STRING
               PERFORM REQUIRE-INPUT
 
-              MOVE FUNCTION TRIM(WS-INLINE)(1:200) TO WS-WORK-DESC(WS-I)
+              MOVE FUNCTION TRIM(WS-INLINE)(1:100) TO WS-WORK-DESC(WS-I)
               ADD 1 TO WS-I
            END-PERFORM.
 
@@ -693,9 +711,15 @@
               MOVE "Add Education (optional, max 3 entries. Enter 'DONE' to finish):" 
               TO WS-OUTLINE
               PERFORM PRINT-LINE
-              MOVE "Degree: " TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              
+              STRING 
+              "Education #" DELIMITED BY SIZE 
+              WS-I DELIMITED BY SIZE 
+              " - Degree: " DELIMITED BY SIZE
+              INTO WS-OUTLINE
+              END-STRING
               PERFORM REQUIRE-INPUT
+
           *> only check if user is "done" at beginning
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
               IF FUNCTION UPPER-CASE(WS-TRIMMED) = "DONE"
@@ -703,14 +727,22 @@
               END-IF
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-EDU-DEGREE(WS-I)
 
-              MOVE "University/College: " TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              STRING 
+              "Education #" DELIMITED BY SIZE 
+              WS-I DELIMITED BY SIZE 
+              " - University/College: " DELIMITED BY SIZE 
+              INTO WS-OUTLINE
+              END-STRING
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-EDU-SCHOOL(WS-I)
 
-              MOVE "Years Attended (e.g., 2023-2025): " TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              STRING 
+              "Education #" DELIMITED BY SIZE 
+              WS-I DELIMITED BY SIZE 
+              " - Years Attended (e.g., 2023-2025): " DELIMITED BY SIZE 
+              INTO WS-OUTLINE
+              END-STRING
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-EDU-YEAR(WS-I)
@@ -721,37 +753,6 @@
            PERFORM SAVE-PROFILE
            MOVE "Profile saved successfully!" TO WS-OUTLINE
            PERFORM PRINT-LINE.
-
-          *> EDUCATION, STILL UNDER CONSTRUCTION TO MATCH PROJECT SPECS
-          *> MOVE 1 TO WS-I
-          *>MOVE "Education: " TO WS-OUTLINE
-          *> PERFORM PRINT-LINE
-          *> PERFORM UNTIL WS-I > 3
-          *>    MOVE "Degree: " TO WS-OUTLINE
-          *>    PERFORM PRINT-LINE
-          *>    PERFORM REQUIRE-INPUT
-          *>    IF FUNCTION TRIM(WS-INLINE) = "DONE"
-          *>       EXIT PARAGRAPH
-          *>    END-IF
-           
-          *>    MOVE "University: " TO WS-OUTLINE
-          *>    PERFORM PRINT-LINE
-          *>   PERFORM REQUIRE-INPUT
-          *>    IF FUNCTION TRIM(WS-INLINE) = "DONE"
-          *>       EXIT PARAGRAPH
-          *>    END-IF
-          *> modify this to match format
-          *>    MOVE "Years: " TO WS-OUTLINE
-          *>    PERFORM PRINT-LINE
-          *>    PERFORM REQUIRE-INPUT
-          *>    IF FUNCTION TRIM(WS-INLINE) = "DONE"
-          *>       EXIT PARAGRAPH
-          *>    END-IF
-          *>    PERFORM SAVE-PROFILE.
-          *>    DISPLAY "
-
-           
-
        
 
       *> what happens after login 
