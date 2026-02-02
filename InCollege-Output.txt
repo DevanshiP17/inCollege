@@ -2,17 +2,17 @@ Welcome to InCollege!
 1. Log In
 2. Create New Account
 Enter your choice: 2
-Please enter your username: kevin6
+Please enter your username: kevin7
 Please enter your password: Valid77!
 Account created successfully!
 Welcome to InCollege!
 1. Log In
 2. Create New Account
 Enter your choice: 1
-Please enter your username: kevin6
+Please enter your username: kevin7
 Please enter your password: Valid77!
 You have successfully logged in
-Welcome, kevin6!
+Welcome, kevin7!
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
@@ -26,15 +26,15 @@ Enter University/College Attended: University of South Florida
 Enter Major: Computer Science
 Enter Graduation Year (YYYY): 2025
 About Me (optional, max 200 chars, Enter blank line to skip): Interested in AI and machine learning
-Experience #1 - Title: ax 3 entries. Enter 'DONE' to finish): Software Intern
-Experience #1 - Company/Organization: nter 'DONE' to finish): Software Intern Google
-Experience #1 - Dates (e.g., Summer 2024): 'DONE' to finish): Software Intern Google Summer 2024
-Experience #1 - Description  (optional, max 100 chars, blank to skip): Intern Google Summer 2024 Built cloud tools
-Experience #2 - Title: ax 3 entries. Enter 'DONE' to finish): DONE
-Education #1 - Degree: , max 3 entries. Enter 'DONE' to finish): Bachelor of Science
-Education #1 - University/College: ies. Enter 'DONE' to finish): Bachelor of Science University of South Florida
-Education #1 - Years Attended (e.g., 2023-2025): NE' to finish): Bachelor of Science University of South Florida 2021-2025
-Education #2 - Degree: , max 3 entries. Enter 'DONE' to finish): DONE
+Experience #1 - Title: Software Intern
+Experience #1 - Company/Organization: Google
+Experience #1 - Dates (e.g., Summer 2024): Summer 2024
+Experience #1 - Description  (optional, max 100 chars, blank to skip): Built cloud tools
+Experience #2 - Title: DONE
+Education #1 - Degree: Bachelor of Science
+Education #1 - University/College: University of South Florida
+Education #1 - Years Attended (e.g., 2023-2025): 2021-2025
+Education #2 - Degree: DONE
 Profile saved successfully!
 1. Create/Edit My Profile
 2. View My Profile
@@ -46,10 +46,10 @@ Welcome to InCollege!
 1. Log In
 2. Create New Account
 Enter your choice: Log In
-Please enter your username: kevin6
+Please enter your username: kevin7
 Please enter your password: Valid77!
 You have successfully logged in
-Welcome, kevin6!
+Welcome, kevin7!
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
