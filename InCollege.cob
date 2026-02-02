@@ -66,6 +66,7 @@
       *> input handling
        01 WS-INLINE PIC X(256).
        01 WS-OUTLINE PIC X(256).
+       01 WS-PREV-PROMPT PIC X(256).
 
        01 WS-EOF-FLAG PIC X VALUE "N".
           88 EOF-YES VALUE "Y".
@@ -286,9 +287,20 @@
            END-READ.
 
        ECHO-INPUT.
-      *> echo user input line into outfile
-           MOVE WS-INLINE TO WS-OUTLINE
-           PERFORM PRINT-LINE.
+      *> echo user input line into outfile, EDITED TO ALLOW FOR INLINE INPUT
+           MOVE SPACES TO WS-OUTLINE
+           STRING
+              FUNCTION TRIM(WS-PREV-PROMPT) DELIMITED BY SIZE
+              " " DELIMITED BY SIZE
+              FUNCTION TRIM(WS-INLINE) DELIMITED BY SIZE
+              INTO WS-OUTLINE
+           END-STRING
+     *>instead of printing the line, just write in echo input
+           WRITE OUT-REC FROM WS-OUTLINE
+           IF WS-OUT-STAT NOT = "00"
+              DISPLAY "ERR: failed writing to outfile. Status= " WS-OUT-STAT
+              STOP RUN
+           END-IF.
 
        REQUIRE-INPUT.
            PERFORM GET-NEXT-INPUT
@@ -296,8 +308,16 @@
                    SET EXIT-YES TO TRUE
                    EXIT PARAGRAPH
            END-IF
+           DISPLAY FUNCTION TRIM(WS-INLINE)
+      *> newline for formatting
+           DISPLAY SPACE
            PERFORM ECHO-INPUT.
 
+       PRINT-INLINE.
+           MOVE WS-OUTLINE TO WS-PREV-PROMPT
+           DISPLAY FUNCTION TRIM(WS-OUTLINE) WITH NO ADVANCING.
+           DISPLAY " " WITH NO ADVANCING.
+       
        PRINT-LINE.
            DISPLAY WS-OUTLINE
            WRITE OUT-REC FROM WS-OUTLINE
@@ -323,7 +343,7 @@
        *>    PERFORM PRINT-LINE
 
            MOVE "Enter your choice:" TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
 
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
@@ -440,7 +460,7 @@
            END-IF
            
            MOVE "Please enter your username:" TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
             IF EXIT-YES OR EOF-YES
               EXIT PARAGRAPH
@@ -457,7 +477,7 @@
            END-IF
 
            MOVE "Please enter your password:" TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
             IF EXIT-YES OR EOF-YES
               EXIT PARAGRAPH
@@ -563,7 +583,7 @@
 
            PERFORM UNTIL USERNAME-FOUND
                MOVE "Please enter your username:" TO WS-OUTLINE
-               PERFORM PRINT-LINE
+               PERFORM PRINT-INLINE
                PERFORM REQUIRE-INPUT
                IF EXIT-YES OR EOF-YES
                   EXIT PARAGRAPH
@@ -571,7 +591,7 @@
                MOVE FUNCTION TRIM(WS-INLINE) TO WS-CURRENT-USERNAME
 
                MOVE "Please enter your password:" TO WS-OUTLINE
-               PERFORM PRINT-LINE
+               PERFORM PRINT-INLINE
                PERFORM REQUIRE-INPUT
                IF EXIT-YES OR EOF-YES
                   EXIT PARAGRAPH
@@ -614,7 +634,7 @@
            MOVE "--- Create/Edit Profile ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Enter First Name: " TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
@@ -622,7 +642,7 @@
            MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-P-FNAME
 
            MOVE "Enter Last Name: " TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
@@ -630,7 +650,7 @@
            MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-P-LNAME
 
            MOVE "Enter University/College Attended: " TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
@@ -638,7 +658,7 @@
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-P-UNIVERSITY
            
            MOVE "Enter Major: " TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
@@ -648,7 +668,7 @@
            PERFORM UNTIL (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4) 
            AND FUNCTION TRIM(WS-P-GRAD-YEAR) IS NUMERIC
               MOVE "Enter Graduation Year (YYYY): " TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
               IF EXIT-YES OR EOF-YES
                   EXIT PARAGRAPH
@@ -664,7 +684,7 @@
        
            MOVE "About Me (optional, max 200 chars, Enter blank line to skip): " 
            TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
@@ -676,13 +696,14 @@
            PERFORM UNTIL WS-I > 3
               MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):" 
               TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              PERFORM PRINT-INLINE
               STRING 
               "Experience #" DELIMITED BY SIZE 
               WS-I DELIMITED BY SIZE 
               " - Title: " DELIMITED BY SIZE
               INTO WS-OUTLINE
               END-STRING
+              PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
           *> only check if user is "done" at beginning
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
@@ -697,6 +718,7 @@
               " - Company/Organization: " DELIMITED BY SIZE
               INTO WS-OUTLINE 
               END-STRING
+              PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-EMPLOYER(WS-I)
@@ -707,6 +729,7 @@
               " - Dates (e.g., Summer 2024): " DELIMITED BY SIZE
               INTO WS-OUTLINE
               END-STRING
+              PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-WORK-DATES(WS-I)
@@ -718,6 +741,7 @@
               DELIMITED BY SIZE
               INTO WS-OUTLINE
               END-STRING
+              PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:100) TO WS-WORK-DESC(WS-I)
@@ -729,7 +753,7 @@
            PERFORM UNTIL WS-I > 3
               MOVE "Add Education (optional, max 3 entries. Enter 'DONE' to finish):" 
               TO WS-OUTLINE
-              PERFORM PRINT-LINE
+              PERFORM PRINT-INLINE
               
               STRING 
               "Education #" DELIMITED BY SIZE 
@@ -737,6 +761,7 @@
               " - Degree: " DELIMITED BY SIZE
               INTO WS-OUTLINE
               END-STRING
+              PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
 
           *> only check if user is "done" at beginning
@@ -752,6 +777,7 @@
               " - University/College: " DELIMITED BY SIZE 
               INTO WS-OUTLINE
               END-STRING
+              PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-EDU-SCHOOL(WS-I)
@@ -762,6 +788,7 @@
               " - Years Attended (e.g., 2023-2025): " DELIMITED BY SIZE 
               INTO WS-OUTLINE
               END-STRING
+              PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
 
               MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-EDU-YEAR(WS-I)
@@ -812,7 +839,7 @@
            MOVE "5. Learn a New Skill" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
 
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
@@ -854,7 +881,7 @@
 
        LEARN-A-SKILL.
            MOVE "Learn a New Skill:" TO WS-OUTLINE
-           PERFORM PRINT-LINE
+           PERFORM PRINT-INLINE
            MOVE "Skill 1" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Skill 2" TO WS-OUTLINE
