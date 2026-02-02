@@ -186,7 +186,7 @@
              10 WS-EDU OCCURS 3 TIMES.
                 15 WS-EDU-DEGREE  PIC X(40) VALUE SPACES.
                 15 WS-EDU-SCHOOL  PIC X(40) VALUE SPACES.
-                15 WS-EDU-YEAR    PIC X(4)  VALUE SPACES.
+                15 WS-EDU-YEAR    PIC X(20)  VALUE SPACES.
       *> Work related information
           05 WS-P-WORK.
              10 WS-WORK OCCURS 3 TIMES.
