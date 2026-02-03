@@ -628,8 +628,35 @@
 
       *> core profile setup with menus and updated account persistence info
        CORE-PROFILE-ROUTINE.
+           
+           *> Clear existing profile data to start fresh when editing
+           MOVE SPACES TO WS-P-FNAME
+           MOVE SPACES TO WS-P-LNAME
+           MOVE SPACES TO WS-P-UNIVERSITY
+           MOVE SPACES TO WS-P-MAJOR
+           MOVE SPACES TO WS-P-GRAD-YEAR
+           MOVE SPACES TO WS-P-ABOUT
+           
+           *> Clear all work experience entries
+           MOVE 1 TO WS-I
+           PERFORM UNTIL WS-I > 3
+               MOVE SPACES TO WS-WORK-TITLE(WS-I)
+               MOVE SPACES TO WS-WORK-EMPLOYER(WS-I)
+               MOVE SPACES TO WS-WORK-DATES(WS-I)
+               MOVE SPACES TO WS-WORK-DESC(WS-I)
+               ADD 1 TO WS-I
+           END-PERFORM
+           
+           *> Clear all education entries
+           MOVE 1 TO WS-I
+           PERFORM UNTIL WS-I > 3
+               MOVE SPACES TO WS-EDU-DEGREE(WS-I)
+               MOVE SPACES TO WS-EDU-SCHOOL(WS-I)
+               MOVE SPACES TO WS-EDU-YEAR(WS-I)
+               ADD 1 TO WS-I
+           END-PERFORM
+
       *>   PERFORM LOAD-PROFILE
-           PERFORM LOAD-PROFILE
            MOVE "--- Create/Edit Profile ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Enter First Name: " TO WS-OUTLINE
@@ -1321,15 +1348,17 @@
            PERFORM PRINT-LINE
 
            *> Display about me
-           MOVE SPACES TO WS-OUTLINE
-           STRING
-               "About Me: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-ABOUT)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
-           END-STRING
-           PERFORM PRINT-LINE
+           IF WS-P-ABOUT NOT = SPACES
+               MOVE SPACES TO WS-OUTLINE
+               STRING
+                   "About Me: "
+                   DELIMITED BY SIZE
+                   FUNCTION TRIM(WS-P-ABOUT)
+                   DELIMITED BY SIZE
+                   INTO WS-OUTLINE
+               END-STRING
+               PERFORM PRINT-LINE
+           END-IF
        
         *>    *> Display about section if it exists
         *>    IF WS-P-ABOUT NOT = SPACES

@@ -1,13 +1,6 @@
 Welcome to InCollege!
 1. Log In
 2. Create New Account
-Enter your choice: 2
-Please enter your username: TestUser27
-Please enter your password: Passw0rd!
-Account created successfully!
-Welcome to InCollege!
-1. Log In
-2. Create New Account
 Enter your choice: 1
 Please enter your username: TestUser27
 Please enter your password: Passw0rd!
@@ -33,38 +26,8 @@ Education #1 - Years Attended (e.g., 2023-2025): 2023-2027
 Education #2 - Degree: Higher Education
 Education #2 - University/College: University B
 Education #2 - Years Attended (e.g., 2023-2025): 2027-2028
-Education #3 - Degree: Postgraduate Diploma
-Education #3 - University/College: University C
-Education #3 - Years Attended (e.g., 2023-2025): 2028-2030
+Education #3 - Degree: DONE
 Profile saved successfully!
-1. Create/Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice: Postgraduate Diploma
-Invalid choice.
-1. Create/Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice: University D
-Invalid choice.
-1. Create/Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice: 2030-2032
-Invalid choice.
-1. Create/Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice: DONE
-Invalid choice.
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
@@ -76,7 +39,6 @@ Name: JJ Nguyen
 University: University of South Florida
 Major: Computer Science
 Graduation Year: 2027
-About Me:
 
 Work Experience:
   (No work experience added yet)
@@ -89,10 +51,6 @@ Education:
   Degree: Higher Education
   University: University B
   Years: 2027-2028
-
-  Degree: Postgraduate Diploma
-  University: University C
-  Years: 2028-2030
 
 --------------------
 1. Create/Edit My Profile
