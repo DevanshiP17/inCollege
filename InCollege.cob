@@ -227,34 +227,33 @@
                    WS-OUT-STAT
                STOP RUN
            END-IF
-          
-           OPEN INPUT ACCT-FILE
-           IF WS-ACCT-STAT = "00"
-               CONTINUE
-           ELSE  
-      *> create accounts file if it does not exit
-      *> noticed bugs when program had no accounts.dat file present
-      *> in directory
-               CLOSE ACCT-FILE
-               IF WS-ACCT-STAT = "05" OR WS-ACCT-STAT = "35"
-
-                  OPEN OUTPUT ACCT-FILE
-                
-                  IF WS-ACCT-STAT NOT = "00" 
-                     DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
-                     STOP RUN  
-                  END-IF 
-               CLOSE  ACCT-FILE 
-               OPEN INPUT ACCT-FILE 
-               IF WS-ACCT-STAT NOT = "00" 
-                   DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
-                   STOP RUN  
-               END-IF
+     *> open the acct file with I-O to use read and write perms
+     *> if code is 00 or "success" continue    
+           OPEN I-O ACCT-FILE
+               IF WS-ACCT-STAT = "00"
+                  CONTINUE
                ELSE
-                   DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
-                   STOP RUN
-               END-IF 
-           END-IF
+     *> else, we create the file if file is not found or missing
+                  IF WS-ACCT-STAT = "05" OR WS-ACCT-STAT = "35"
+                     CLOSE ACCT-FILE
+                     OPEN OUTPUT ACCT-FILE
+     *>if file is not successfully created or found, stop program with error
+                     IF WS-ACCT-STAT NOT = "00" AND WS-ACCT-STAT NOT = "05"
+                        DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                        STOP RUN
+                     END-IF
+                     CLOSE  ACCT-FILE
+                     OPEN I-O ACCT-FILE
+                     IF WS-ACCT-STAT NOT = "00"
+                        DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                        STOP RUN
+                     END-IF
+                  ELSE
+                        DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                        STOP RUN
+                  END-IF
+               END-IF
+
            *> Initialize profiles.dat (create if doesn't exist)
            OPEN INPUT PROFILES-FILE
            IF PROFILES-STATUS = "00"
@@ -697,6 +696,7 @@
               MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):" 
               TO WS-OUTLINE
               PERFORM PRINT-INLINE
+              DISPLAY SPACE
               MOVE SPACES TO WS-OUTLINE
               STRING 
               "Experience #" DELIMITED BY SIZE 
@@ -758,6 +758,7 @@
               MOVE "Add Education (optional, max 3 entries. Enter 'DONE' to finish):" 
               TO WS-OUTLINE
               PERFORM PRINT-INLINE
+              DISPLAY SPACE
               MOVE SPACES TO WS-OUTLINE
               STRING 
               "Education #" DELIMITED BY SIZE 
