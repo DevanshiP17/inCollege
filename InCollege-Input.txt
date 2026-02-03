@@ -1,28 +1,19 @@
-2
-kevin7
-Valid77!
 1
-kevin7
-Valid77!
+TestUser2
+Passw0rd!
 1
-Kevin
+John
 Doe
 University of South Florida
 Computer Science
-2025
-Interested in AI and machine learning
-Software Intern
-Google
-Summer 2024
-Built cloud tools
+2027
+I love the beach :) Join our beach club if u want!
+Software Engineer
+Company at XYZ Corporation
+2022-2023
+Doing coding stuff
 DONE
-Bachelor of Science
-University of South Florida
-2021-2025
 DONE
-Logout
-Log In
-kevin7
-Valid77!
 2
 Logout
+3

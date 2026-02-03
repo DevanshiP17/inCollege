@@ -1,18 +1,11 @@
 Welcome to InCollege!
 1. Log In
 2. Create New Account
-Enter your choice: 2
-Please enter your username: kevin7
-Please enter your password: Valid77!
-Account created successfully!
-Welcome to InCollege!
-1. Log In
-2. Create New Account
 Enter your choice: 1
-Please enter your username: kevin7
-Please enter your password: Valid77!
+Please enter your username: TestUser2
+Please enter your password: Passw0rd!
 You have successfully logged in
-Welcome, kevin7!
+Welcome, TestUser2!
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
@@ -20,36 +13,19 @@ Welcome, kevin7!
 5. Learn a New Skill
 Enter your choice: 1
 --- Create/Edit Profile ---
-Enter First Name: Kevin
+Enter First Name: John
 Enter Last Name: Doe
 Enter University/College Attended: University of South Florida
 Enter Major: Computer Science
-Enter Graduation Year (YYYY): 2025
-About Me (optional, max 200 chars, Enter blank line to skip): Interested in AI and machine learning
-Experience #1 - Title: Software Intern
-Experience #1 - Company/Organization: Google
-Experience #1 - Dates (e.g., Summer 2024): Summer 2024
-Experience #1 - Description  (optional, max 100 chars, blank to skip): Built cloud tools
-Experience #2 - Title: DONE
-Education #1 - Degree: Bachelor of Science
-Education #1 - University/College: University of South Florida
-Education #1 - Years Attended (e.g., 2023-2025): 2021-2025
-Education #2 - Degree: DONE
+Enter Graduation Year (YYYY): 2027
+About Me (optional, max 200 chars, Enter blank line to skip): I love the beach :) Join our beach club if u want!
+Experience #1 - Title: ax 3 entries. Enter 'DONE' to finish): Software Engineer
+Experience #1 - Company/Organization: nter 'DONE' to finish): Software Engineer Company at XYZ Corporation
+Experience #1 - Dates (e.g., Summer 2024): 'DONE' to finish): Software Engineer Company at XYZ Corporation 2022-2023
+Experience #1 - Description  (optional, max 100 chars, blank to skip): Engineer Company at XYZ Corporation 2022-2023 Doing coding stuff
+Experience #2 - Title: ax 3 entries. Enter 'DONE' to finish): DONE
+Education #1 - Degree: , max 3 entries. Enter 'DONE' to finish): DONE
 Profile saved successfully!
-1. Create/Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice: Logout
-Welcome to InCollege!
-1. Log In
-2. Create New Account
-Enter your choice: Log In
-Please enter your username: kevin7
-Please enter your password: Valid77!
-You have successfully logged in
-Welcome, kevin7!
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
@@ -57,22 +33,26 @@ Welcome, kevin7!
 5. Learn a New Skill
 Enter your choice: 2
 --- Your Profile ---
-Name: Kevin Doe
+Name: John Doe
 University: University of South Florida
 Major: Computer Science
-Graduation Year: 2025
-About Me: Interested in AI and machine learning
+Graduation Year: 2027
+About Me: I love the beach :) Join our beach club if u want!
 
 Work Experience:
-  Title: Software Intern
-  Company: Google
-  Dates: Summer 2024
-  Description: Built cloud tools
+  Title: Software Engineer
+  Company: Company at XYZ Corporation
+  Dates: 2022-2023
+  Description: Doing coding stuff
 
 Education:
   Degree: Bachelor of Science
-  University: University of South Florida
-  Years: 2021-2025
+  University: University A
+  Years: DONE
+
+  Degree: 2
+  University: Logout
+  Years: 3
 
 --------------------
 1. Create/Edit My Profile
@@ -84,4 +64,5 @@ Enter your choice: Logout
 Welcome to InCollege!
 1. Log In
 2. Create New Account
+Enter your choice: 3
 --- END_OF_PROGRAM_EXECUTION ---
