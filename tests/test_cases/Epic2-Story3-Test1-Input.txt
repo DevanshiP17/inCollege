@@ -1,6 +1,3 @@
-2
-TestUser2
-Passw0rd!
 1
 TestUser2
 Passw0rd!
@@ -20,6 +17,3 @@ Bachelor of Science
 Example University
 2021-2025
 DONE
-2
-Logout
-3

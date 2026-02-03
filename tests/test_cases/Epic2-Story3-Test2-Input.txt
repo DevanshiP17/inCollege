@@ -1,0 +1,16 @@
+1
+TestUser2
+Passw0rd!
+1
+John
+Doe
+University of South Florida
+Computer Science
+2027
+I love the beach :) Join our beach club if u want!
+Software Engineer
+Company at XYZ Corporation
+2022-2023
+Doing coding stuff
+DONE
+DONE

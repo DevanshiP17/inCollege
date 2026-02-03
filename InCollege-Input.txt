@@ -7,13 +7,12 @@ Doe
 University of South Florida
 Computer Science
 2027
-I love the beach :) Join our beach club if u want!
-Software Engineer
-Company at XYZ Corporation
-2022-2023
-Doing coding stuff
+
 DONE
+Bachelor of Science
+University A 
+2023-2027
+Higher Education
 DONE
 2
-Logout
-3
+
