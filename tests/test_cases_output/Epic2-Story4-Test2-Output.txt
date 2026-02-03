@@ -1,11 +1,18 @@
 Welcome to InCollege!
 1. Log In
 2. Create New Account
+Enter your choice: 2
+Please enter your username: TestUser27
+Please enter your password: Passw0rd!
+Account created successfully!
+Welcome to InCollege!
+1. Log In
+2. Create New Account
 Enter your choice: 1
-Please enter your username: TestUser2
+Please enter your username: TestUser27
 Please enter your password: Passw0rd!
 You have successfully logged in
-Welcome, TestUser2!
+Welcome, TestUser27!
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
@@ -13,8 +20,8 @@ Welcome, TestUser2!
 5. Learn a New Skill
 Enter your choice: 1
 --- Create/Edit Profile ---
-Enter First Name: John
-Enter Last Name: Doe
+Enter First Name: JJ
+Enter Last Name: Nguyen
 Enter University/College Attended: University of South Florida
 Enter Major: Computer Science
 Enter Graduation Year (YYYY): 2027
@@ -65,17 +72,14 @@ Invalid choice.
 5. Learn a New Skill
 Enter your choice: 2
 --- Your Profile ---
-Name: John Doe
+Name: JJ Nguyen
 University: University of South Florida
 Major: Computer Science
 Graduation Year: 2027
 About Me:
 
 Work Experience:
-  Title: Software Intern
-  Company: Tech Corp
-  Dates: Summer 2024
-  Description: Developed tools for internal testing.
+  (No work experience added yet)
 
 Education:
   Degree: Bachelor of Science
@@ -91,13 +95,6 @@ Education:
   Years: 2028-2030
 
 --------------------
-1. Create/Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice:
-Invalid choice.
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
