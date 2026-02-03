@@ -1,0 +1,40 @@
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: 1
+Please enter your username: TestUser2
+Please enter your password: Passw0rd!
+You have successfully logged in
+Welcome, TestUser2!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 1
+--- Create/Edit Profile ---
+Enter First Name: John
+Enter Last Name: Doe
+Enter University/College Attended: University of South Florida
+Enter Major: Computer Science
+Enter Graduation Year (YYYY): 2027
+About Me (optional, max 200 chars, Enter blank line to skip):
+Experience #1 - Title: DONE
+Education #1 - Degree: Bachelor of Science
+Education #1 - University/College: University A
+Education #1 - Years Attended (e.g., 2023-2025): 2023-2027
+Education #2 - Degree: DONE
+Profile saved successfully!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Invalid choice.
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+--- END_OF_PROGRAM_EXECUTION ---

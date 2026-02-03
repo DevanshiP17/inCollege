@@ -1,0 +1,37 @@
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: 1
+Please enter your username: TestUser2
+Please enter your password: Passw0rd!
+You have successfully logged in
+Welcome, TestUser2!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 1
+--- Create/Edit Profile ---
+Enter First Name: John
+Enter Last Name: Doe
+Enter University/College Attended: University of South Florida
+Enter Major: Computer Science
+Enter Graduation Year (YYYY): 2025
+About Me (optional, max 200 chars, Enter blank line to skip):
+Experience #1 - Title: Software Intern
+Experience #1 - Company/Organization: Tech Corp
+Experience #1 - Dates (e.g., Summer 2024): Summer 2024
+Experience #1 - Description  (optional, max 100 chars, blank to skip): Developed tools for internal testing.
+Experience #2 - Title: DONE
+Education #1 - Degree: Bachelor of Science
+Education #1 - University/College: Example University
+Education #1 - Years Attended (e.g., 2023-2025): 2021-2025
+Education #2 - Degree: DONE
+Profile saved successfully!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+--- END_OF_PROGRAM_EXECUTION ---
