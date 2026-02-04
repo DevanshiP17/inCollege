@@ -57,41 +57,20 @@ WS-CHAR (PIC X) - used for holding a singular character for string looping
 WS-I (PIC 9 VALUE 0) - used for general looping throughout program
 
 PROFILE VARIABLES - self explanatory
-      *> Profile set-up
-       01 WS-PROFILE.
-          05 WS-P-NAME.
-             10 WS-P-FNAME  PIC X(20) VALUE SPACES.
-             10 WS-P-LNAME PIC X(20) VALUE SPACES.
-          05 WS-P-MAJOR       PIC X(40)  VALUE SPACES.
-          05 WS-P-UNIVERSITY  PIC X(40)  VALUE SPACES.
-          05 WS-P-GRAD-YEAR   PIC X(4)   VALUE SPACES.
-          05 WS-P-ABOUT       PIC X(200) VALUE SPACES.
-      *> Education related information
-          05 WS-P-EDU.
-             10 WS-EDU OCCURS 3 TIMES.
-                15 WS-EDU-DEGREE  PIC X(40) VALUE SPACES.
-                15 WS-EDU-SCHOOL  PIC X(40) VALUE SPACES.
-                15 WS-EDU-YEAR    PIC X(20)  VALUE SPACES.
-      *> Work related information
-          05 WS-P-WORK.
-             10 WS-WORK OCCURS 3 TIMES.
-                15 WS-WORK-TITLE     PIC X(40) VALUE SPACES.
-                15 WS-WORK-EMPLOYER  PIC X(40) VALUE SPACES.
-                15 WS-WORK-DATES     PIC X(40) VALUE SPACES.
-                15 WS-WORK-DESC      PIC X(100) VALUE SPACES.
-
-
 
 
 FUNCTIONS:
 
 MAIN:
 -Just like a traditional main() in c based languages 
+
 -executes functions for loading/creating files, loading account information, printing top level menu until user requests to exit or we reach end of file, printing end of program execution message and general clean up functions
+
 -program execution, if all goes well, ends here
 
 INIT-FILES
 -opens input file as INPUT, tests if file was opened successfully. If not, we display error message stored in WS-IN-STAT and top program
+
 -opening output file is the same, except we open as OUTPUT, which creates the file if it does not exist
 
 -accounts file is a bit more complex:
