@@ -58,6 +58,47 @@ WS-I (PIC 9 VALUE 0) - used for general looping throughout program
 
 PROFILE VARIABLES - self explanatory
 
+*> Profile set-up
+       01 WS-PROFILE.
+          
+		  05 WS-P-NAME.
+             
+			 10 WS-P-FNAME  PIC X(20) VALUE SPACES.
+             
+			 10 WS-P-LNAME PIC X(20) VALUE SPACES. 
+          
+		  05 WS-P-MAJOR       PIC X(40)  VALUE SPACES.
+          
+		  05 WS-P-UNIVERSITY  PIC X(40)  VALUE SPACES.
+         
+		  05 WS-P-GRAD-YEAR   PIC X(4)   VALUE SPACES.
+          
+		  05 WS-P-ABOUT       PIC X(200) VALUE SPACES.
+      *> Education related information
+         
+		  05 WS-P-EDU.
+            
+			 10 WS-EDU OCCURS 3 TIMES.
+              
+				
+				15 WS-EDU-DEGREE  PIC X(40) VALUE SPACES.
+                
+				15 WS-EDU-SCHOOL  PIC X(40) VALUE SPACES.
+                
+				15 WS-EDU-YEAR    PIC X(20)  VALUE SPACES.
+      *> Work related information
+          
+		  05 WS-P-WORK.
+            
+			 10 WS-WORK OCCURS 3 TIMES.
+               
+				15 WS-WORK-TITLE     PIC X(40) VALUE SPACES.
+                
+				15 WS-WORK-EMPLOYER  PIC X(40) VALUE SPACES.
+                
+				15 WS-WORK-DATES     PIC X(40) VALUE SPACES.
+               
+				15 WS-WORK-DESC      PIC X(100) VALUE SPACES.
 
 FUNCTIONS:
 
@@ -74,13 +115,21 @@ INIT-FILES
 -opening output file is the same, except we open as OUTPUT, which creates the file if it does not exist
 
 -accounts file is a bit more complex:
+	
 	-first we open file in I-O mode for read/write
+	
 	-if open is successful we skip logic below and paragraph terminates
+	
 	-else, we create the file if it is not found or missing
+	
 	-after creating the ACCT-FILE with OUTPUT, we test to see if file was created successfully or if it was created successfully, but it’s “missing” (weird bug, but ACCT-FILE is still created)
+	
 	-if not, we stop program and print error
+	
 	-if created, we reopen the ACCT-FILE in I-O mode
+	
 	-if file still not opening successfully, we terminate program execution and print the file error
+	
 	-the last else stops program execution and prints the file flag error code if the code is neither “05” (file created, but “missing” optional file) or “35” (file not found)
 
 
