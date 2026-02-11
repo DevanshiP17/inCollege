@@ -290,8 +290,12 @@
            CLOSE IN-FILE
            CLOSE OUT-FILE
            CLOSE ACCT-FILE
-           CLOSE PROFILES-FILE
-           CLOSE TEMP-PROFILES-FILE.
+           IF PROFILES-STATUS NOT = "00" AND PROFILES-STATUS NOT = "05"
+               CLOSE PROFILES-FILE
+           END-IF
+           IF TEMP-PROFILES-STATUS NOT = "00" AND TEMP-PROFILES-STATUS NOT = "05"
+               CLOSE TEMP-PROFILES-FILE
+           END-IF.
 
       *> get next input from file, if at end, void input line
       *> and set EOF flag yes flag to true
@@ -1099,6 +1103,7 @@
                    IF FUNCTION TRIM(WS-CURRENT-FULL-NAME) =
                       FUNCTION TRIM(WS-SEARCH-FULL-NAME)
                        SET USER-SEARCH-FOUND TO TRUE
+                       PERFORM PARSE-PROFILE-LINE
                    END-IF
            END-READ.
        
@@ -1432,10 +1437,6 @@
            SET PROFILE-NOT-FOUND TO TRUE
            SET PROFILE-EOF-NO TO TRUE
            
-           *> Close any open profile files first
-           CLOSE PROFILES-FILE
-           CLOSE TEMP-PROFILES-FILE
-           
            *> Try to open existing profiles.dat
            OPEN INPUT PROFILES-FILE
            
@@ -1466,11 +1467,20 @@
        *>           Replace original with temp         
        *>---------------------------------------------
        REWRITE-PROFILE-FILE.
+           *> Re-open profiles file for reading
+           OPEN INPUT PROFILES-FILE
+           IF PROFILES-STATUS NOT = "00"
+               DISPLAY "ERROR: Cannot open profiles.dat for reading. Status=" 
+                   PROFILES-STATUS
+               EXIT PARAGRAPH
+           END-IF
+           
            *> Open temp file for output
            OPEN OUTPUT TEMP-PROFILES-FILE
            IF TEMP-PROFILES-STATUS NOT = "00"
                DISPLAY "ERROR: Cannot create temp profile file. Status=" 
                    TEMP-PROFILES-STATUS
+               CLOSE PROFILES-FILE
                EXIT PARAGRAPH
            END-IF
            
@@ -1499,6 +1509,8 @@
                PERFORM WRITE-CURRENT-PROFILE
            END-IF
            
+           *> Close both files
+           CLOSE PROFILES-FILE
            CLOSE TEMP-PROFILES-FILE
            
            *> Reset EOF for file operations
@@ -1709,11 +1721,11 @@
        *>---------------------------------------------
        REPLACE-PROFILE-FILE.
            *> Delete old profiles.dat
-           CALL "SYSTEM" USING "rm -f profiles.dat"
+           CALL "SYSTEM" USING "del profiles.dat"
            END-CALL
            
            *> Rename temp file to profiles.dat
-           CALL "SYSTEM" USING "mv temp-profiles.dat profiles.dat"
+           CALL "SYSTEM" USING "ren temp-profiles.dat profiles.dat"
            END-CALL.
        
        *>---------------------------------------------
@@ -1925,5 +1937,4 @@
                MOVE " None" TO WS-OUTLINE
                PERFORM PRINT-LINE
                
-           END-IF
-       
+           END-IF.
