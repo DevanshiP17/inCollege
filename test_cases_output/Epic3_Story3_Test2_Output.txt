@@ -1,0 +1,62 @@
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: 1
+Please enter your username: johndoe
+Please enter your password: Password1!
+You have successfully logged in
+Welcome, johndoe!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 1
+--- Create/Edit Profile ---
+Enter First Name: John
+Enter Last Name: Doe
+Enter University/College Attended: State University
+Enter Major: Computer Science
+Enter Graduation Year (YYYY): 2025
+About Me (optional, max 200 chars, Enter blank line to skip): Passionate about software development.
+Experience #1 - Title: Software Intern
+Experience #1 - Company/Organization: Tech Corp
+Experience #1 - Dates (e.g., Summer 2024): Summer 2024
+Experience #1 - Description  (optional, max 100 chars, blank to skip): Developed web applications
+Experience #2 - Title: DONE
+Education #1 - Degree: Bachelor of Science
+Education #1 - University/College: State University
+Education #1 - Years Attended (e.g., 2023-2025): 2021-2025
+Education #2 - Degree: DONE
+Profile saved successfully!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: Man Ngyuyen
+--- Found User Profile ---
+Name: Man Ngyuyen
+University: University of South Florida
+Major: Computer Science
+Graduation Year: 2027
+About Me: DONE
+
+Experience:
+ None
+
+Education:
+ None
+
+-------------------------
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: logout
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+--- END_OF_PROGRAM_EXECUTION ---

@@ -1,19 +1,6 @@
 1
-TestUser27
-Passw0rd!
-1
-JJ
-Nguyen
-University of South Florida
-Computer Science
-2027
-
-DONE
-Bachelor of Science
-University A 
-2023-2027
-Higher Education
-University B
-2027-2028
-DONE
-2
+TestUser
+Password1!
+4
+John  Doe
+logout

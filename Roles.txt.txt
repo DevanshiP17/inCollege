@@ -1,0 +1,9 @@
+Roles.txt
+
+Wyoming team 
+
+Scrum Master:	Kody Nguyen
+Developer 1:	Tyler Norment
+Developer 2:	Devanshi Pande
+Tester 1: 	Lavanya Pande
+Tester 2:	Jolie Nguyen

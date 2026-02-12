@@ -2,60 +2,25 @@ Welcome to InCollege!
 1. Log In
 2. Create New Account
 Enter your choice: 1
-Please enter your username: TestUser27
-Please enter your password: Passw0rd!
+Please enter your username: TestUser
+Please enter your password: Password1!
 You have successfully logged in
-Welcome, TestUser27!
+Welcome, TestUser!
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
 4. Find someone you know
 5. Learn a New Skill
-Enter your choice: 1
---- Create/Edit Profile ---
-Enter First Name: JJ
-Enter Last Name: Nguyen
-Enter University/College Attended: University of South Florida
-Enter Major: Computer Science
-Enter Graduation Year (YYYY): 2027
-About Me (optional, max 200 chars, Enter blank line to skip):
-Experience #1 - Title: DONE
-Education #1 - Degree: Bachelor of Science
-Education #1 - University/College: University A
-Education #1 - Years Attended (e.g., 2023-2025): 2023-2027
-Education #2 - Degree: Higher Education
-Education #2 - University/College: University B
-Education #2 - Years Attended (e.g., 2023-2025): 2027-2028
-Education #3 - Degree: DONE
-Profile saved successfully!
+Enter your choice: 4
+Enter the full name of the person you are looking for: John  Doe
+No one by that name could be found.
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for a job
 4. Find someone you know
 5. Learn a New Skill
-Enter your choice: 2
---- Your Profile ---
-Name: JJ Nguyen
-University: University of South Florida
-Major: Computer Science
-Graduation Year: 2027
-
-Work Experience:
-  (No work experience added yet)
-
-Education:
-  Degree: Bachelor of Science
-  University: University A
-  Years: 2023-2027
-
-  Degree: Higher Education
-  University: University B
-  Years: 2027-2028
-
---------------------
-1. Create/Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
+Enter your choice: logout
+Welcome to InCollege!
+1. Log In
+2. Create New Account
 --- END_OF_PROGRAM_EXECUTION ---
