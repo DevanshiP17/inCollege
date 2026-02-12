@@ -1,0 +1,42 @@
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: 1
+Please enter your username: janesmith
+Please enter your password: Password2!
+You have successfully logged in
+Welcome, janesmith!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 1
+--- Create/Edit Profile ---
+Enter First Name: Jane
+Enter Last Name: Smith
+Enter University/College Attended: City College
+Enter Major: Business Administration
+Enter Graduation Year (YYYY): 2026
+About Me (optional, max 200 chars, Enter blank line to skip):
+Experience #1 - Title: DONE
+Education #1 - Degree: DONE
+Profile saved successfully!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: John Johnson
+No one by that name could be found.
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: logout
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+--- END_OF_PROGRAM_EXECUTION ---
