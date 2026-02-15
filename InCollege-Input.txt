@@ -1,6 +1,7 @@
 1
 TestUser
 Password1!
-4
-John  Doe
+2
+Jane Smith
+1
 logout

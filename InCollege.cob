@@ -19,14 +19,22 @@
                ASSIGN TO "accounts.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-ACCT-STAT.
+               
            SELECT PROFILES-FILE
                ASSIGN TO "profiles.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS PROFILES-STATUS.
+               
            SELECT TEMP-PROFILES-FILE
                ASSIGN TO "temp-profiles.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS TEMP-PROFILES-STATUS.
+
+           *> NEW: Connection requests file
+           SELECT OPTIONAL CONN-FILE
+               ASSIGN TO "connections.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-CONN-STAT.
 
        DATA DIVISION.
        FILE SECTION.
@@ -49,6 +57,12 @@
        FD TEMP-PROFILES-FILE.
        01 TEMP-PROFILE-REC PIC X(512).
 
+       *>*********************************************
+       *> CONNECTION FILE DESCRIPTOR                 *
+       *>*********************************************
+       FD CONN-FILE.
+       01 CONN-REC PIC X(256).
+
        WORKING-STORAGE SECTION.
 
       *> file status
@@ -62,6 +76,10 @@
        01 PROFILES-STATUS PIC XX.
        01 TEMP-PROFILES-STATUS PIC XX.
 
+       *>*********************************************
+       *> CONNECTION FILE STATUS CODE                *
+       *>*********************************************
+       01 WS-CONN-STAT PIC XX.
 
       *> input handling
        01 WS-INLINE PIC X(256).
@@ -71,6 +89,7 @@
        01 WS-EOF-FLAG PIC X VALUE "N".
           88 EOF-YES VALUE "Y".
           88 EOF-NO  VALUE "N".
+          
       *> had to add a dedicated eof flag for accounts file due to issue
       *> with WS-EOF-FLAG reuse between paragraphs
        01 WS-ACCT_EOF-FLAG PIC X VALUE "N".
@@ -86,7 +105,6 @@
        01 WS-TRIMMED PIC X(64).
 
       *> Account storage - supports up to 5 accounts
-
        01 WS-ACCOUNTS.
           05 WS-ACCOUNT OCCURS 5 TIMES.
              10 WS-USERNAME PIC X(20).
@@ -125,9 +143,6 @@
        *>*********************************************
        *> PROFILE PERSISTENCE VARIABLES              *
        *>*********************************************
-       
-      
-
        *> Profile line buffer for reading/writing
        01 WS-PROFILE-LINE PIC X(512).
        
@@ -173,7 +188,7 @@
       *>*********************************************
       *> USER SEARCH VARIABLES                      *
       *>*********************************************
-      01 WS-SEARCH-INPUT PIC X(256).
+       01 WS-SEARCH-INPUT PIC X(256).
        01 WS-SEARCH-FNAME PIC X(20).
        01 WS-SEARCH-LNAME PIC X(20).
        01 WS-SEARCH-FULL-NAME PIC X(41).
@@ -186,6 +201,21 @@
        01 WS-SEARCH-EOF PIC X VALUE "N".
           88 SEARCH-EOF-YES VALUE "Y".
           88 SEARCH-EOF-NO VALUE "N".
+
+      *>*********************************************
+      *> CONNECTION REQUEST VARIABLES               *
+      *>*********************************************
+       01 WS-CONN-LINE PIC X(256).
+       01 WS-CONN-SENDER-PARSE PIC X(20).
+       01 WS-CONN-RECIP-PARSE PIC X(20).
+       01 WS-CONN-STATUS-PARSE PIC X(20).
+       01 WS-CONN-RECIPIENT PIC X(20).
+       01 WS-CONN-INVALID PIC X VALUE "N".
+       
+       01 WS-CONN-EOF PIC X VALUE "N".
+          88 CONN-EOF-YES VALUE "Y".
+          88 CONN-EOF-NO VALUE "N".
+
       *>*********************************************
       *> PROFILE VARIABLES                          *
       *>*********************************************
@@ -216,6 +246,7 @@
        MAIN.
            PERFORM INIT-FILES
            PERFORM LOAD-ACCOUNTS-FROM-FILE
+           PERFORM LOAD-CONNECTIONS-FROM-FILE
 
            PERFORM TOP-LEVEL-MENU
                UNTIL EXIT-YES OR EOF-YES
@@ -244,6 +275,7 @@
                    WS-OUT-STAT
                STOP RUN
            END-IF
+           
      *> open the acct file for reading (LINE SEQUENTIAL doesn't support I-O)
      *> if code is 00 or "success" continue    
            OPEN INPUT ACCT-FILE
@@ -291,7 +323,8 @@
            CLOSE OUT-FILE
            CLOSE ACCT-FILE
            CLOSE PROFILES-FILE
-           CLOSE TEMP-PROFILES-FILE.
+           CLOSE TEMP-PROFILES-FILE
+           CLOSE CONN-FILE.
 
       *> get next input from file, if at end, void input line
       *> and set EOF flag yes flag to true
@@ -619,7 +652,7 @@
                PERFORM CHECK-CREDENTIALS
 
                IF USERNAME-FOUND
-                   MOVE "You have successfully logged in" TO WS-OUTLINE
+                   MOVE "You have successfully logged in." TO WS-OUTLINE
                    PERFORM PRINT-LINE
                    PERFORM AFTER-LOGIN
                ELSE
@@ -632,6 +665,7 @@
 
       *> reset found flag for future operations
            SET USERNAME-NOT-FOUND TO TRUE.
+           
        CHECK-CREDENTIALS.
            SET USERNAME-NOT-FOUND TO TRUE
            PERFORM VARYING WS-I FROM 1 BY 1
@@ -881,15 +915,13 @@
            END-IF.
 
        AFTER-LOGIN-MENU.
-           MOVE "1. Create/Edit My Profile" TO WS-OUTLINE
+           MOVE "1. View My Profile" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "2. View My Profile" TO WS-OUTLINE
+           MOVE "2. Search for User" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "3. Search for a job" TO WS-OUTLINE
+           MOVE "3. Learn a New Skill" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "4. Find someone you know" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "5. Learn a New Skill" TO WS-OUTLINE
+           MOVE "4. View My Pending Connection Requests" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
@@ -900,21 +932,17 @@
            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
 
-          *> THIS IS UNDER CONSTRUCTION RIGHT NOW, CORE PROFILE ROUTINE WIP
-           
            EVALUATE WS-TRIMMED
                WHEN "1"
-                   PERFORM CORE-PROFILE-ROUTINE
-               WHEN "2"
                    PERFORM VIEW-PROFILE
-               WHEN "3"
-                   MOVE "This section is currently under construction"
-                   TO WS-OUTLINE
-                   PERFORM PRINT-LINE
-                WHEN "4" 
+               WHEN "2"
                    PERFORM FIND-USER
-               WHEN "5"
+               WHEN "3"
                    PERFORM LEARN-A-SKILL
+               WHEN "4"
+                   *> Placeholder for Developer 2's VIEW-PENDING-REQUESTS
+                   MOVE "View Pending Requests - Coming Soon" TO WS-OUTLINE
+                   PERFORM PRINT-LINE
                WHEN "Logout"
                    SET EXIT-YES TO TRUE
                WHEN "log out"
@@ -979,7 +1007,7 @@
       *>---------------------------------------------
       *> FIND-USER                                   
       *> Purpose: Search for another user by name    
-      *> Called: From AFTER-LOGIN-MENU option 4      
+      *> Called: From AFTER-LOGIN-MENU option 2      
       *>---------------------------------------------
        FIND-USER.
            *> Prompt for full name
@@ -1111,6 +1139,7 @@
       *> DISPLAY-FOUND-USER-PROFILE                  
       *> Purpose: Display the found user's complete profile
       *> Called: By FIND-USER when match is found    
+      *> MODIFIED: Added menu for connection request
       *>---------------------------------------------
        DISPLAY-FOUND-USER-PROFILE.
            *> Display header
@@ -1299,8 +1328,40 @@
            MOVE SPACES TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "-------------------------" TO WS-OUTLINE
-           PERFORM PRINT-LINE.
-      
+           PERFORM PRINT-LINE
+           
+           *> NEW: Display menu for connection request
+           PERFORM PROFILE-ACTION-MENU.
+       
+      *>---------------------------------------------
+      *> PROFILE-ACTION-MENU                         
+      *> Purpose: Menu after viewing a user profile  
+      *> Allows sending connection request           
+      *>---------------------------------------------
+       PROFILE-ACTION-MENU.
+           MOVE "1. Send Connection Request" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "2. Back to Main Menu" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "Enter your choice:" TO WS-OUTLINE
+           PERFORM PRINT-INLINE
+           
+           PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
+           MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+           
+           EVALUATE WS-TRIMMED
+               WHEN "1"
+                   PERFORM SEND-CONNECTION-REQUEST
+               WHEN "2"
+                   CONTINUE
+               WHEN OTHER
+                   MOVE "Invalid choice." TO WS-OUTLINE
+                   PERFORM PRINT-LINE
+           END-EVALUATE.
+
       *>*********************************************
       *> PROFILE PERSISTENCE ROUTINES               *
       *>*********************************************
@@ -1740,7 +1801,7 @@
        *>---------------------------------------------
        *> VIEW-PROFILE                                
        *> Purpose: Display current user's profile     
-       *> Called: From AFTER-LOGIN-MENU option 2      
+       *> Called: From AFTER-LOGIN-MENU option 1      
        *>---------------------------------------------
        VIEW-PROFILE.
            *> Display header
@@ -1807,16 +1868,6 @@
                END-STRING
                PERFORM PRINT-LINE
            END-IF
-       
-        *>    *> Display about section if it exists
-        *>    IF WS-P-ABOUT NOT = SPACES
-        *>        MOVE SPACES TO WS-OUTLINE
-        *>        PERFORM PRINT-LINE
-        *>        MOVE "About Me:" TO WS-OUTLINE
-        *>        PERFORM PRINT-LINE
-        *>        MOVE FUNCTION TRIM(WS-P-ABOUT) TO WS-OUTLINE
-        *>        PERFORM PRINT-LINE
-        *>    END-IF
        
            *> Display work experience section
            MOVE SPACES TO WS-OUTLINE
@@ -1942,4 +1993,9 @@
            *> Display footer
            MOVE "--------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE.
+
+      *>*********************************************
+      *> CONNECTION REQUEST ROUTINES (COPYBOOK)     *
+      *>*********************************************
+       COPY SENDREQ_SRC.
        

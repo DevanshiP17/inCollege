@@ -1,0 +1,204 @@
+>>SOURCE FORMAT FREE
+      *>*********************************************
+      *> SENDREQ_SRC.cob - Connection Request Sending
+      *> Purpose: Handle sending connection requests
+      *> Developer 1 Week 4 Implementation
+      *>*********************************************
+
+      *>---------------------------------------------
+      *> SEND-CONNECTION-REQUEST                     
+      *> Purpose: Send a connection request to another user
+      *> Called: From DISPLAY-FOUND-USER-PROFILE menu
+      *> Validates: No duplicate requests, not already connected
+      *>---------------------------------------------
+       SEND-CONNECTION-REQUEST.
+           *> Build the recipient username from the found profile
+           MOVE WS-PARSED-USERNAME TO WS-CONN-RECIPIENT
+           
+           *> Validate the connection request
+           PERFORM CHECK-CONNECTION-EXISTS
+           
+           IF WS-CONN-INVALID = "Y"
+               *> Error message already displayed in CHECK-CONNECTION-EXISTS
+               EXIT PARAGRAPH
+           END-IF
+           
+           *> Connection is valid - save it
+           PERFORM SAVE-CONNECTION-TO-FILE
+           
+           *> Display confirmation
+           MOVE SPACES TO WS-OUTLINE
+           STRING
+               "Connection request sent to "
+               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-PARSED-FNAME)
+               DELIMITED BY SIZE
+               " "
+               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-PARSED-LNAME)
+               DELIMITED BY SIZE
+               "."
+               DELIMITED BY SIZE
+               INTO WS-OUTLINE
+           END-STRING
+           PERFORM PRINT-LINE.
+
+      *>---------------------------------------------
+      *> CHECK-CONNECTION-EXISTS                     
+      *> Purpose: Validate connection request before sending
+      *> Checks: Already connected, pending from recipient, 
+      *>         pending from sender
+      *>---------------------------------------------
+       CHECK-CONNECTION-EXISTS.
+           *> Reset validation flag
+           MOVE "N" TO WS-CONN-INVALID
+           SET CONN-EOF-NO TO TRUE
+           
+           *> Open connections file for reading
+           OPEN INPUT CONN-FILE
+           
+           IF WS-CONN-STAT = "00"
+               *> File exists - check for existing connections
+               PERFORM READ-AND-CHECK-CONNECTION
+                   UNTIL CONN-EOF-YES OR WS-CONN-INVALID = "Y"
+               
+               CLOSE CONN-FILE
+           ELSE
+               *> File doesn't exist yet (status 05 or 35)
+               *> This is the first connection - no validation needed
+               *> No need to close since open failed
+               CONTINUE
+           END-IF
+           
+           *> Reset EOF flag
+           SET CONN-EOF-NO TO TRUE.
+
+      *>---------------------------------------------
+      *> READ-AND-CHECK-CONNECTION                   
+      *> Purpose: Read one connection and validate   
+      *> Called: By CHECK-CONNECTION-EXISTS          
+      *>---------------------------------------------
+       READ-AND-CHECK-CONNECTION.
+           READ CONN-FILE INTO WS-CONN-LINE
+               AT END
+                   SET CONN-EOF-YES TO TRUE
+               NOT AT END
+                   *> Parse the connection line
+                   PERFORM PARSE-CONNECTION-LINE
+                   
+                   *> Check if users are already connected (ACCEPTED status)
+                   IF (WS-CONN-SENDER-PARSE = WS-CURRENT-USERNAME AND
+                       WS-CONN-RECIP-PARSE = WS-CONN-RECIPIENT AND
+                       WS-CONN-STATUS-PARSE = "ACCEPTED")
+                   OR (WS-CONN-SENDER-PARSE = WS-CONN-RECIPIENT AND
+                       WS-CONN-RECIP-PARSE = WS-CURRENT-USERNAME AND
+                       WS-CONN-STATUS-PARSE = "ACCEPTED")
+                       MOVE "Y" TO WS-CONN-INVALID
+                       MOVE "You are already connected with this user."
+                           TO WS-OUTLINE
+                       PERFORM PRINT-LINE
+                   END-IF
+                   
+                   *> Check if recipient already sent a request to sender
+                   IF WS-CONN-SENDER-PARSE = WS-CONN-RECIPIENT AND
+                      WS-CONN-RECIP-PARSE = WS-CURRENT-USERNAME AND
+                      WS-CONN-STATUS-PARSE = "PENDING"
+                       MOVE "Y" TO WS-CONN-INVALID
+                       MOVE "This user has already sent you a connection request."
+                           TO WS-OUTLINE
+                       PERFORM PRINT-LINE
+                   END-IF
+                   
+                   *> Check if sender already sent a request to recipient
+                   IF WS-CONN-SENDER-PARSE = WS-CURRENT-USERNAME AND
+                      WS-CONN-RECIP-PARSE = WS-CONN-RECIPIENT AND
+                      WS-CONN-STATUS-PARSE = "PENDING"
+                       MOVE "Y" TO WS-CONN-INVALID
+                       MOVE "You have already sent a request to this user."
+                           TO WS-OUTLINE
+                       PERFORM PRINT-LINE
+                   END-IF
+           END-READ.
+
+      *>---------------------------------------------
+      *> PARSE-CONNECTION-LINE                       
+      *> Purpose: Parse pipe-delimited connection data
+      *> Format: sender|recipient|status             
+      *>---------------------------------------------
+       PARSE-CONNECTION-LINE.
+           MOVE SPACES TO WS-CONN-SENDER-PARSE
+           MOVE SPACES TO WS-CONN-RECIP-PARSE
+           MOVE SPACES TO WS-CONN-STATUS-PARSE
+           
+           UNSTRING WS-CONN-LINE
+               DELIMITED BY "|"
+               INTO
+                   WS-CONN-SENDER-PARSE
+                   WS-CONN-RECIP-PARSE
+                   WS-CONN-STATUS-PARSE
+           END-UNSTRING.
+
+      *>---------------------------------------------
+      *> SAVE-CONNECTION-TO-FILE                     
+      *> Purpose: Append new connection request      
+      *> Called: After validation passes             
+      *>---------------------------------------------
+       SAVE-CONNECTION-TO-FILE.
+           *> Build connection record first
+           MOVE SPACES TO WS-CONN-LINE
+           STRING
+               FUNCTION TRIM(WS-CURRENT-USERNAME)
+               DELIMITED BY SIZE
+               "|"
+               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-CONN-RECIPIENT)
+               DELIMITED BY SIZE
+               "|PENDING"
+               DELIMITED BY SIZE
+               INTO WS-CONN-LINE
+           END-STRING
+           
+           *> Open file in EXTEND mode (creates if doesn't exist)
+           *> Status 41 means already open - try to close and reopen
+           OPEN EXTEND CONN-FILE
+           
+           IF WS-CONN-STAT = "41"
+               *> File is already open, close it first
+               CLOSE CONN-FILE
+               OPEN EXTEND CONN-FILE
+           END-IF
+           
+           IF WS-CONN-STAT = "00" OR WS-CONN-STAT = "05"
+               *> Write the connection request
+               WRITE CONN-REC FROM WS-CONN-LINE
+               CLOSE CONN-FILE
+           ELSE
+               DISPLAY "ERROR: Cannot write to connections.dat. Status="
+                   WS-CONN-STAT
+           END-IF.
+
+      *>---------------------------------------------
+      *> LOAD-CONNECTIONS-FROM-FILE                  
+      *> Purpose: Load all connections at startup    
+      *> Called: During initialization               
+      *> Note: Currently just validates file exists  
+      *>---------------------------------------------
+       LOAD-CONNECTIONS-FROM-FILE.
+           *> Use the same pattern as accounts.dat for Windows compatibility
+           OPEN INPUT CONN-FILE
+           
+           IF WS-CONN-STAT = "00"
+               *> File exists - close it
+               CLOSE CONN-FILE
+           ELSE
+               *> File doesn't exist - create it
+               IF WS-CONN-STAT = "05" OR WS-CONN-STAT = "35"
+                   *> Don't close since open failed
+                   OPEN OUTPUT CONN-FILE
+                   IF WS-CONN-STAT = "00" OR WS-CONN-STAT = "05"
+                       *> File created successfully
+                       CLOSE CONN-FILE
+                   END-IF
+               END-IF
+           END-IF.
+           
