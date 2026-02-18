@@ -1,0 +1,5 @@
+test1_send tests positive case - first time request, connections.dat file is created or extended and record of connection is added
+
+test2_send tests negative case - connection already pending from the same sender and same receiver
+
+test3_send tests edge case - tests if current user has a request being sent to it
