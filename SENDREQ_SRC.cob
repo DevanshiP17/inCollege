@@ -2,14 +2,6 @@
       *>*********************************************
       *> SENDREQ_SRC.cob - Connection Request Sending
       *> Purpose: Handle sending connection requests
-      *> Developer 1 Week 4 Implementation
-      *>*********************************************
-
-      *>---------------------------------------------
-      *> SEND-CONNECTION-REQUEST                     
-      *> Purpose: Send a connection request to another user
-      *> Called: From DISPLAY-FOUND-USER-PROFILE menu
-      *> Validates: No duplicate requests, not already connected
       *>---------------------------------------------
        SEND-CONNECTION-REQUEST.
            *> Build the recipient username from the found profile
@@ -45,9 +37,6 @@
 
       *>---------------------------------------------
       *> CHECK-CONNECTION-EXISTS                     
-      *> Purpose: Validate connection request before sending
-      *> Checks: Already connected, pending from recipient, 
-      *>         pending from sender
       *>---------------------------------------------
        CHECK-CONNECTION-EXISTS.
            *> Reset validation flag
@@ -74,9 +63,7 @@
            SET CONN-EOF-NO TO TRUE.
 
       *>---------------------------------------------
-      *> READ-AND-CHECK-CONNECTION                   
-      *> Purpose: Read one connection and validate   
-      *> Called: By CHECK-CONNECTION-EXISTS          
+      *> READ-AND-CHECK-CONNECTION                           
       *>---------------------------------------------
        READ-AND-CHECK-CONNECTION.
            READ CONN-FILE INTO WS-CONN-LINE
@@ -121,9 +108,7 @@
            END-READ.
 
       *>---------------------------------------------
-      *> PARSE-CONNECTION-LINE                       
-      *> Purpose: Parse pipe-delimited connection data
-      *> Format: sender|recipient|status             
+      *> PARSE-CONNECTION-LINE                                  
       *>---------------------------------------------
        PARSE-CONNECTION-LINE.
            MOVE SPACES TO WS-CONN-SENDER-PARSE
@@ -179,9 +164,6 @@
 
       *>---------------------------------------------
       *> LOAD-CONNECTIONS-FROM-FILE                  
-      *> Purpose: Load all connections at startup    
-      *> Called: During initialization               
-      *> Note: Currently just validates file exists  
       *>---------------------------------------------
        LOAD-CONNECTIONS-FROM-FILE.
            *> Use the same pattern as accounts.dat for Windows compatibility

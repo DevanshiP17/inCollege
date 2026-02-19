@@ -28,7 +28,7 @@ Education:
 1. Send Connection Request
 2. Back to Main Menu
 Enter your choice: 1
-You have already sent a request to this user.
+You are already connected with this user.
 1. View My Profile
 2. Search for User
 3. Learn a New Skill
