@@ -2,10 +2,10 @@ Welcome to InCollege!
 1. Log In
 2. Create New Account
 Enter your choice: 1
-Please enter your username: TestUser3
-Please enter your password: Password3
+Please enter your username: NewStudent
+Please enter your password: Password2@
 You have successfully logged in.
-Welcome, TestUser3!
+Welcome, NewStudent!
 1. View My Profile
 2. Search for User
 3. Learn a New Skill
@@ -16,8 +16,8 @@ Enter your choice: 4
 Request from: TestUser
 1. Accept
 2. Reject
-Enter your choice for TestUser: 2
-Connection request from TestUser rejected.
+Enter your choice for TestUser: 1
+Connection request from TestUser accepted!
 -----------------------------------
 1. View My Profile
 2. Search for User

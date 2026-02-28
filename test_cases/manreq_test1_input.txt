@@ -1,0 +1,6 @@
+1
+NewStudent
+Password2@
+4
+1
+logout

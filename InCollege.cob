@@ -217,6 +217,18 @@
           88 CONN-EOF-NO VALUE "N".
 
       *>*********************************************
+      *> CONNECTION MANAGEMENT VARIABLES            *
+      *> Used by MANREQ_SRC (accept/reject)         *
+      *>*********************************************
+       01 WS-CONN-ARRAY.
+          05 WS-CONN-ENTRY OCCURS 25 TIMES.
+             10 WS-CA-SENDER PIC X(20).
+             10 WS-CA-RECIP  PIC X(20).
+             10 WS-CA-STATUS PIC X(20).
+       01 WS-CONN-TOTAL PIC 999 VALUE 0.
+       01 WS-CONN-IDX   PIC 999 VALUE 0.
+
+      *>*********************************************
       *> PROFILE VARIABLES                          *
       *>*********************************************
       *> Profile set-up
@@ -923,6 +935,8 @@
            PERFORM PRINT-LINE
            MOVE "4. View My Pending Connection Requests" TO WS-OUTLINE
            PERFORM PRINT-LINE
+           MOVE "5. View My Network" TO WS-OUTLINE
+           PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
 
@@ -940,7 +954,7 @@
                WHEN "3"
                    PERFORM LEARN-A-SKILL
                WHEN "4"
-                   PERFORM VIEW-PENDING-REQUESTS
+                   PERFORM MANAGE-PENDING-REQUESTS
                WHEN "Logout"
                    SET EXIT-YES TO TRUE
                WHEN "log out"
@@ -1998,3 +2012,6 @@
        COPY SENDREQ_SRC.
 
        COPY VIEWREQ_SRC.
+
+       COPY MANREQ_SRC.
+       

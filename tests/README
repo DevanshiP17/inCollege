@@ -1,9 +1,0 @@
-Positive: first time request, connections.dat file is created or extended and record of connection is added, connections.dat file not created
-
-Negative: connection already pending from the same sender and same receiver, connections.dat file created with pending connection from current user to recipient
-
-Edge: tests if current user has a request being sent to it, connections.dat file created with other user pending connection against current
-
-Negative 2: user does not exist
-
-Negative 3: already connected to user, connections.dat file created with a CONNECTED config
