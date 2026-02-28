@@ -28,7 +28,7 @@ Education:
 1. Send Connection Request
 2. Back to Main Menu
 Enter your choice: 1
-Connection request sent to Jane Smith.
+You have already sent a request to this user.
 1. View My Profile
 2. Search for User
 3. Learn a New Skill
