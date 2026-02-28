@@ -940,9 +940,7 @@
                WHEN "3"
                    PERFORM LEARN-A-SKILL
                WHEN "4"
-                   *> Placeholder for Developer 2's VIEW-PENDING-REQUESTS
-                   MOVE "View Pending Requests - Coming Soon" TO WS-OUTLINE
-                   PERFORM PRINT-LINE
+                   PERFORM VIEW-PENDING-REQUESTS
                WHEN "Logout"
                    SET EXIT-YES TO TRUE
                WHEN "log out"
@@ -1998,4 +1996,5 @@
       *> CONNECTION REQUEST ROUTINES (COPYBOOK)     *
       *>*********************************************
        COPY SENDREQ_SRC.
-       
+
+       COPY VIEWREQ_SRC.
