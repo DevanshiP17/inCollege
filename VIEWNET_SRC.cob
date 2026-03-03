@@ -364,11 +364,7 @@
                STRING
                    "Connected with: "
                    DELIMITED BY SIZE
-                   FUNCTION TRIM(WS-NET-FNAME)
-                   DELIMITED BY SIZE
-                   " "
-                   DELIMITED BY SIZE
-                   FUNCTION TRIM(WS-NET-LNAME)
+                   FUNCTION TRIM(WS-NETWORK-DISPLAY-USER)
                    DELIMITED BY SIZE
                    " (University: "
                    DELIMITED BY SIZE
@@ -384,12 +380,14 @@
                END-STRING
                PERFORM PRINT-LINE
            ELSE
-               *> Profile not found - show username only
+               *> Profile not found - show username with empty details
                MOVE SPACES TO WS-OUTLINE
                STRING
                    "Connected with: "
                    DELIMITED BY SIZE
                    FUNCTION TRIM(WS-NETWORK-DISPLAY-USER)
+                   DELIMITED BY SIZE
+                   " (University: , Major: )"
                    DELIMITED BY SIZE
                    INTO WS-OUTLINE
                END-STRING
