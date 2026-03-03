@@ -2,7 +2,7 @@
 
 ## Positive Test 1: network lists accepted user connection(s)
 
-# Conditions
+### Conditions
 
 make sure connections.dat has an ACCEPTED connection between two users. Make sure accounts.dat has the two users logged.
 
