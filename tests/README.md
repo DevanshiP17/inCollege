@@ -1,4 +1,4 @@
-### View Network Test Cases
+# View Network Test Cases
 
 ## Positive Test 1: network lists accepted user connection(s)
 
