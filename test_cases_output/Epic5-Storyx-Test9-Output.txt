@@ -24,4 +24,5 @@ Enter your choice: logout
 Welcome to InCollege!
 1. Log In
 2. Create New Account
---- END_OF_PROGRAM_EXECUTION ---
+Enter your choice: --- END_OF_PROGRAM_EXECUTION ---
+

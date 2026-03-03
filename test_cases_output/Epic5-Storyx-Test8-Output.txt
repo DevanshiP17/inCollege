@@ -2,10 +2,10 @@ Welcome to InCollege!
 1. Log In
 2. Create New Account
 Enter your choice: 1
-Please enter your username: TestUser
-Please enter your password: Password1!
+Please enter your username: NewStudent
+Please enter your password: Password2@
 You have successfully logged in.
-Welcome, TestUser!
+Welcome, NewStudent!
 1. View My Profile
 2. Search for User
 3. Learn a New Skill
@@ -13,7 +13,11 @@ Welcome, TestUser!
 5. View My Network
 Enter your choice: 4
 --- Pending Connection Requests ---
-You have no pending connection requests at this time.
+Request from: TestUser
+1. Accept
+2. Reject
+Enter your choice for TestUser: InvalidChoice
+Invalid choice. Skipping request.
 -----------------------------------
 1. View My Profile
 2. Search for User
@@ -24,4 +28,10 @@ Enter your choice: logout
 Welcome to InCollege!
 1. Log In
 2. Create New Account
---- END_OF_PROGRAM_EXECUTION ---
+Enter your choice: 
+Invalid choice.
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: --- END_OF_PROGRAM_EXECUTION ---
+

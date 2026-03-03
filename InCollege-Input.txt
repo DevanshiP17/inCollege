@@ -1,6 +1,5 @@
 1
-TestUser3
-Password3
-4
-2
-logout
+UserA
+Pass1!A
+5
+Logout
