@@ -13,7 +13,7 @@ Welcome, TestUser!
 5. View My Network
 Enter your choice: 5
 --- Your Network ---
-Connected with: NewStudent
+Connected with: NewStudent (University: West Coast Uni, Major: Business)
 --------------------
 1. View My Profile
 2. Search for User
