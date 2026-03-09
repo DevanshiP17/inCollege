@@ -217,18 +217,6 @@
           88 CONN-EOF-NO VALUE "N".
 
       *>*********************************************
-      *> CONNECTION MANAGEMENT VARIABLES            *
-      *> Used by MANREQ_SRC (accept/reject)         *
-      *>*********************************************
-       01 WS-CONN-ARRAY.
-          05 WS-CONN-ENTRY OCCURS 25 TIMES.
-             10 WS-CA-SENDER PIC X(20).
-             10 WS-CA-RECIP  PIC X(20).
-             10 WS-CA-STATUS PIC X(20).
-       01 WS-CONN-TOTAL PIC 999 VALUE 0.
-       01 WS-CONN-IDX   PIC 999 VALUE 0.
-
-      *>*********************************************
       *> PROFILE VARIABLES                          *
       *>*********************************************
       *> Profile set-up
@@ -253,6 +241,44 @@
                 15 WS-WORK-EMPLOYER  PIC X(40) VALUE SPACES.
                 15 WS-WORK-DATES     PIC X(40) VALUE SPACES.
                 15 WS-WORK-DESC      PIC X(100) VALUE SPACES.
+
+      *>*********************************************
+      *> CONNECTION ARRAY FOR MANAGE/VIEW NETWORK   *
+      *> Used by MANREQ_SRC.cob and VIEWNET_SRC.cob *
+      *>*********************************************
+       01 WS-CONN-TOTAL PIC 99 VALUE 0.
+       01 WS-CONN-IDX PIC 99 VALUE 0.
+       01 WS-CONN-ARRAY.
+          05 WS-CONN-ITEM OCCURS 25 TIMES.
+             10 WS-CA-SENDER PIC X(20).
+             10 WS-CA-RECIP PIC X(20).
+             10 WS-CA-STATUS PIC X(20).
+
+      *>*********************************************
+      *> VIEW NETWORK VARIABLES                     *
+      *>*********************************************
+       01 WS-NETWORK-DISPLAY-USER PIC X(20).
+       01 WS-NET-FNAME PIC X(20).
+       01 WS-NET-LNAME PIC X(20).
+       01 WS-NET-UNIVERSITY PIC X(40).
+       01 WS-NET-MAJOR PIC X(40).
+
+       01 WS-NET-PARSED-USERNAME PIC X(20).
+       01 WS-NET-PARSED-FNAME PIC X(20).
+       01 WS-NET-PARSED-LNAME PIC X(20).
+       01 WS-NET-PARSED-MAJOR PIC X(40).
+       01 WS-NET-PARSED-UNIVERSITY PIC X(40).
+
+       01 WS-NETWORK-PROFILE-FLAG PIC X VALUE "N".
+          88 NETWORK-PROFILE-FOUND VALUE "Y".
+          88 NETWORK-PROFILE-NOT-FOUND VALUE "N".
+
+      *> Job/internship string fields
+       01 WS-JOB-TITLE PIC X(40) VALUE SPACES.
+       01 WS-JOB DESC  PIC X(200) VALUE SPACES.
+       01 WS-JOB-EMPLOYER  PIC X(40) VALUE SPACES.
+       01 WS-JOB-LOCATION  PIC X(40) VALUE SPACES.
+       01 WS-JOB-SALARY    PIC X(40) VALUE SPACES.
 
        PROCEDURE DIVISION.
        MAIN.
@@ -937,6 +963,8 @@
            PERFORM PRINT-LINE
            MOVE "5. View My Network" TO WS-OUTLINE
            PERFORM PRINT-LINE
+           MOVE "6. Search for a job" TO WS-OUTLINE
+           PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
 
@@ -955,6 +983,10 @@
                    PERFORM LEARN-A-SKILL
                WHEN "4"
                    PERFORM MANAGE-PENDING-REQUESTS
+               WHEN "5"
+                   PERFORM VIEW-MY-NETWORK
+               WHEN "6"
+                   PERFORM JOB-SEARCH-MENU
                WHEN "Logout"
                    SET EXIT-YES TO TRUE
                WHEN "log out"
@@ -1936,7 +1968,7 @@
                        END-STRING
                        PERFORM PRINT-LINE
                    END-IF
-       
+
                    
                END-IF
                ADD 1 TO WS-I
@@ -2010,8 +2042,121 @@
       *> CONNECTION REQUEST ROUTINES (COPYBOOK)     *
       *>*********************************************
        COPY SENDREQ_SRC.
-
        COPY VIEWREQ_SRC.
-
-       COPY MANREQ_SRC.
+       COPY VIEWNET_SRC.
        
+
+      *> Job search routine
+       JOB-SEARCH-MENU.
+           MOVE "--- Job Search/Internship Menu ---" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           
+           MOVE "1. Post a Job/Internship" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
+           MOVE "2. Brows Jobs/Internships" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
+           MOVE "3. Back to Main Menu" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
+           MOVE "Enter your choice: " TO WS-OUTLINE
+           PERFORM PRINT-INLINE
+
+           PERFORM REQUIRE-INPUT
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF 
+
+           MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+
+           EVALUATE WS-TRIMMED
+               WHEN "1"
+                   PERFORM POST-JOB-INTERN
+                   PERFORM JOB-SEARCH-MENU
+               WHEN "2"
+                   MOVE "Browse Jobs/Internships is under construction"
+                   TO WS-OUTLINE
+                   PERFORM PRINT-LINE
+                   PERFORM JOB-SEARCH-MENU
+               WHEN "3"
+                   EXIT PARAGRAPH
+               WHEN other
+                   MOVE "Invalid Choice." TO WS-OUTLINE
+                   PEROFRM PRINT-LINE
+                   PERFORM JOB-SEARCH-MENU
+           END-EVALUATE.
+
+      *> logic for posting a job/internship.
+           POST-JOB-INTERN.
+           MOVE "--- Post a New Job/Internship ---" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
+           MOVE "Enter job Title:" TO WS-OUTLINE
+           PERFORM PRINT-INLINE
+           PERFORM REQUIRE-INPUT
+
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
+
+           MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-TITLE
+
+           MOVE "Enter Description (max 200 chars):" TO WS-OUTLINE
+           PERFORM PRINT-INLINE
+           PERFORM REQUIRE-INPUT
+
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
+
+           MOVE FUNCTION TRIM(WS-INLINE)(1:200) TO WS-JOB-DESC
+
+           MOVE "Enter Employer Name:" TO WS-OUTLINE
+           PERFORM PRINT-INLINE
+           PERFORM REQUIRE-INPUT
+
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
+
+           MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-EMPLOYER
+
+           MOVE "Enter Location:" TO WS-OUTLINE
+           PERFORM PRINT-INLINE
+           PERFORM REQUIRE-INPUT
+
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
+
+           MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-LOCATION
+
+           MOVE "Enter Salary (optional, enter 'NONE' to skip):" TO WS-OUTLINE
+           PERFORM PRINT-INLINE
+           PERFORM REQUIRE-INPUT
+
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
+
+           MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+
+           IF FUNCTION UPPER-CASE(WS-TRIMMED) = "NONE"
+               MOVE SPACES TO WS-JOB-SALARY
+           ELSE
+               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-SALARY
+           END-IF
+
+      *> Kody will implement this function
+           PERFORM SAVE-JOB-POSTING
+
+           MOVE "Job posted successfully." TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "-------------------------------" TO WS-OUTLINE
+           PERFORM PRINT-LINE.
+       
+      *> Kody will implement this function
+       SAVE-JOB-POSTING.
+       
+
