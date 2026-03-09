@@ -275,7 +275,7 @@
 
       *> Job/internship string fields
        01 WS-JOB-TITLE PIC X(40) VALUE SPACES.
-       01 WS-JOB DESC  PIC X(200) VALUE SPACES.
+       01 WS-JOB-DESC  PIC X(200) VALUE SPACES.
        01 WS-JOB-EMPLOYER  PIC X(40) VALUE SPACES.
        01 WS-JOB-LOCATION  PIC X(40) VALUE SPACES.
        01 WS-JOB-SALARY    PIC X(40) VALUE SPACES.
@@ -2054,7 +2054,7 @@
            MOVE "1. Post a Job/Internship" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
-           MOVE "2. Brows Jobs/Internships" TO WS-OUTLINE
+           MOVE "2. Browse Jobs/Internships" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
            MOVE "3. Back to Main Menu" TO WS-OUTLINE
@@ -2083,7 +2083,7 @@
                    EXIT PARAGRAPH
                WHEN other
                    MOVE "Invalid Choice." TO WS-OUTLINE
-                   PEROFRM PRINT-LINE
+                   PERFORM PRINT-LINE
                    PERFORM JOB-SEARCH-MENU
            END-EVALUATE.
 
