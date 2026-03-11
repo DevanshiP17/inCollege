@@ -953,17 +953,21 @@
            END-IF.
 
        AFTER-LOGIN-MENU.
-           MOVE "1. View My Profile" TO WS-OUTLINE
+           MOVE "1. Create/Edit My Profile" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "2. Search for User" TO WS-OUTLINE
+           MOVE "2. View My Profile" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "3. Learn a New Skill" TO WS-OUTLINE
+           MOVE "3. Search for User" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "4. View My Pending Connection Requests" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "5. View My Network" TO WS-OUTLINE
+           MOVE "5. Learn a New Skill" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "6. Search for a job" TO WS-OUTLINE
+           MOVE "6. View My Network" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "7. Go Back" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "8. Job Search/Internship" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
@@ -976,16 +980,20 @@
 
            EVALUATE WS-TRIMMED
                WHEN "1"
-                   PERFORM VIEW-PROFILE
+                   PERFORM CORE-PROFILE-ROUTINE
                WHEN "2"
-                   PERFORM FIND-USER
+                   PERFORM VIEW-PROFILE
                WHEN "3"
-                   PERFORM LEARN-A-SKILL
+                   PERFORM FIND-USER
                WHEN "4"
                    PERFORM MANAGE-PENDING-REQUESTS
                WHEN "5"
-                   PERFORM VIEW-MY-NETWORK
+                   PERFORM LEARN-A-SKILL
                WHEN "6"
+                   PERFORM VIEW-MY-NETWORK
+               WHEN "7"
+                   EXIT PARAGRAPH
+               WHEN "8"
                    PERFORM JOB-SEARCH-MENU
                WHEN "Logout"
                    SET EXIT-YES TO TRUE
