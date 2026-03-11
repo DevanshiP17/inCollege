@@ -1,0 +1,12 @@
+1
+testuser
+Test1234!
+6
+1
+Software Intern
+Develop features for the main product
+Acme Corp
+New York, NY
+50000/year
+3
+logout
