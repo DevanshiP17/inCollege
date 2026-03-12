@@ -1,18 +1,12 @@
 1
-testuser
-Test1234!
-6
+alice
+Alice1!pass
+8
 1
-Job One
-First job description
-Company A
-City A
-30000/year
-1
-Job Two
-Second job description
-Company B
-City B
-NONE
+DevOps Intern
+Support CI/CD pipeline setup and cloud infrastructure deployment.
+InfraCloud
+Remote
+$30/hour
 3
-logout
+7
