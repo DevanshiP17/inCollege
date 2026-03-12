@@ -36,6 +36,12 @@
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-CONN-STAT.
 
+           *> NEW: Jobs/Internships file
+           SELECT OPTIONAL JOBS-FILE
+               ASSIGN TO "jobs.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-JOBS-STAT.
+
        DATA DIVISION.
        FILE SECTION.
 
@@ -63,6 +69,12 @@
        FD CONN-FILE.
        01 CONN-REC PIC X(256).
 
+       *>*********************************************
+       *> JOBS FILE DESCRIPTOR                       *
+       *>*********************************************
+       FD JOBS-FILE.
+       01 JOBS-REC PIC X(512).
+
        WORKING-STORAGE SECTION.
 
       *> file status
@@ -80,6 +92,11 @@
        *> CONNECTION FILE STATUS CODE                *
        *>*********************************************
        01 WS-CONN-STAT PIC XX.
+
+       *>*********************************************
+       *> JOBS FILE STATUS CODE                      *
+       *>*********************************************
+       01 WS-JOBS-STAT PIC XX.
 
       *> input handling
        01 WS-INLINE PIC X(256).
@@ -273,12 +290,19 @@
           88 NETWORK-PROFILE-FOUND VALUE "Y".
           88 NETWORK-PROFILE-NOT-FOUND VALUE "N".
 
-      *> Job/internship string fields
+      *>*********************************************
+      *> JOB/INTERNSHIP VARIABLES                   *
+      *>*********************************************
        01 WS-JOB-TITLE PIC X(40) VALUE SPACES.
        01 WS-JOB-DESC  PIC X(200) VALUE SPACES.
        01 WS-JOB-EMPLOYER  PIC X(40) VALUE SPACES.
        01 WS-JOB-LOCATION  PIC X(40) VALUE SPACES.
        01 WS-JOB-SALARY    PIC X(40) VALUE SPACES.
+       01 WS-JOB-LINE PIC X(512) VALUE SPACES.
+
+       01 WS-JOBS-EOF PIC X VALUE "N".
+          88 JOBS-EOF-YES VALUE "Y".
+          88 JOBS-EOF-NO VALUE "N".
 
        PROCEDURE DIVISION.
        MAIN.
@@ -354,6 +378,25 @@
                        PROFILES-STATUS
                END-IF
                CLOSE PROFILES-FILE
+           END-IF
+
+           *> Initialize jobs.dat (create if doesn't exist)
+           OPEN INPUT JOBS-FILE
+           IF WS-JOBS-STAT = "00"
+               CLOSE JOBS-FILE
+           ELSE
+               IF WS-JOBS-STAT = "05" OR WS-JOBS-STAT = "35"
+                   OPEN OUTPUT JOBS-FILE
+                   IF WS-JOBS-STAT = "00" OR WS-JOBS-STAT = "05"
+                       CLOSE JOBS-FILE
+                   ELSE
+                       DISPLAY "ERROR: Cannot create jobs.dat. Status="
+                           WS-JOBS-STAT
+                   END-IF
+               ELSE
+                   DISPLAY "ERROR: Cannot open jobs.dat. Status="
+                       WS-JOBS-STAT
+               END-IF
            END-IF.
 
        CLOSE-FILES.
@@ -362,7 +405,8 @@
            CLOSE ACCT-FILE
            CLOSE PROFILES-FILE
            CLOSE TEMP-PROFILES-FILE
-           CLOSE CONN-FILE.
+           CLOSE CONN-FILE
+           CLOSE JOBS-FILE.
 
       *> get next input from file, if at end, void input line
       *> and set EOF flag yes flag to true
@@ -2052,9 +2096,16 @@
        COPY SENDREQ_SRC.
        COPY VIEWREQ_SRC.
        COPY VIEWNET_SRC.
-       
 
-      *> Job search routine
+      *>*********************************************
+      *> JOB SEARCH / INTERNSHIP ROUTINES           *
+      *>*********************************************
+
+      *>---------------------------------------------
+      *> JOB-SEARCH-MENU
+      *> Purpose: Display job search/internship menu
+      *> Called: From AFTER-LOGIN-MENU option 6
+      *>---------------------------------------------
        JOB-SEARCH-MENU.
            MOVE "--- Job Search/Internship Menu ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
@@ -2068,7 +2119,7 @@
            MOVE "3. Back to Main Menu" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
-           MOVE "Enter your choice: " TO WS-OUTLINE
+           MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
 
            PERFORM REQUIRE-INPUT
@@ -2083,24 +2134,26 @@
                    PERFORM POST-JOB-INTERN
                    PERFORM JOB-SEARCH-MENU
                WHEN "2"
-                   MOVE "Browse Jobs/Internships is under construction"
-                   TO WS-OUTLINE
-                   PERFORM PRINT-LINE
+                   PERFORM BROWSE-JOBS
                    PERFORM JOB-SEARCH-MENU
                WHEN "3"
                    EXIT PARAGRAPH
-               WHEN other
-                   MOVE "Invalid Choice." TO WS-OUTLINE
+               WHEN OTHER
+                   MOVE "Invalid choice." TO WS-OUTLINE
                    PERFORM PRINT-LINE
                    PERFORM JOB-SEARCH-MENU
            END-EVALUATE.
 
-      *> logic for posting a job/internship.
-           POST-JOB-INTERN.
+      *>---------------------------------------------
+      *> POST-JOB-INTERN
+      *> Purpose: Capture job/internship details
+      *> Called: From JOB-SEARCH-MENU option 1
+      *>---------------------------------------------
+       POST-JOB-INTERN.
            MOVE "--- Post a New Job/Internship ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
-           MOVE "Enter job Title:" TO WS-OUTLINE
+           MOVE "Enter Job Title:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
 
@@ -2110,7 +2163,8 @@
 
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-TITLE
 
-           MOVE "Enter Description (max 200 chars):" TO WS-OUTLINE
+           MOVE "Enter Description (max 200 chars):" 
+               TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
 
@@ -2140,7 +2194,9 @@
 
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-LOCATION
 
-           MOVE "Enter Salary (optional, enter 'NONE' to skip):" TO WS-OUTLINE
+           MOVE 
+           "Enter Salary (optional, enter 'NONE' to skip):"
+               TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
 
@@ -2153,18 +2209,73 @@
            IF FUNCTION UPPER-CASE(WS-TRIMMED) = "NONE"
                MOVE SPACES TO WS-JOB-SALARY
            ELSE
-               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-SALARY
+               MOVE FUNCTION TRIM(WS-INLINE)(1:40) 
+                   TO WS-JOB-SALARY
            END-IF
 
-      *> Kody will implement this function
            PERFORM SAVE-JOB-POSTING
 
-           MOVE "Job posted successfully." TO WS-OUTLINE
+           MOVE "Job posted successfully!" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           MOVE "-------------------------------" TO WS-OUTLINE
+           MOVE "----------------------------------" TO WS-OUTLINE
+           PERFORM PRINT-LINE.
+
+      *>---------------------------------------------
+      *> SAVE-JOB-POSTING
+      *> Purpose: Persist job posting to jobs.dat
+      *> Format: poster|title|description|employer|
+      *>         location|salary
+      *> Called: After job details are captured
+      *>---------------------------------------------
+       SAVE-JOB-POSTING.
+           *> Build pipe-delimited job record
+           MOVE SPACES TO WS-JOB-LINE
+           STRING
+               FUNCTION TRIM(WS-CURRENT-USERNAME)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-TITLE)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-DESC)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-EMPLOYER)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-LOCATION)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-SALARY)
+               DELIMITED BY SIZE
+               INTO WS-JOB-LINE
+           END-STRING
+
+           *> Open file in EXTEND mode to append
+           OPEN EXTEND JOBS-FILE
+
+           IF WS-JOBS-STAT = "41"
+               *> File already open, close and reopen
+               CLOSE JOBS-FILE
+               OPEN EXTEND JOBS-FILE
+           END-IF
+
+           IF WS-JOBS-STAT = "00" OR WS-JOBS-STAT = "05"
+               WRITE JOBS-REC FROM WS-JOB-LINE
+               CLOSE JOBS-FILE
+           ELSE
+               DISPLAY "ERROR: Cannot write to jobs.dat. Status="
+                   WS-JOBS-STAT
+           END-IF.
+
+      *>---------------------------------------------
+      *> BROWSE-JOBS
+      *> Purpose: Browse existing job listings
+      *> Status: Under construction for this week
+      *> Called: From JOB-SEARCH-MENU option 2
+      *>---------------------------------------------
+       BROWSE-JOBS.
+           MOVE "Browse Jobs/Internships is under construction."
+               TO WS-OUTLINE
            PERFORM PRINT-LINE.
        
-      *> Kody will implement this function
-       SAVE-JOB-POSTING.
-       
-
