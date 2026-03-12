@@ -1036,6 +1036,7 @@
                WHEN "6"
                    PERFORM VIEW-MY-NETWORK
                WHEN "7"
+                   SET EXIT-YES TO TRUE
                    EXIT PARAGRAPH
                WHEN "8"
                    PERFORM JOB-SEARCH-MENU
