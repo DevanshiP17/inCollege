@@ -303,6 +303,31 @@
        01 WS-JOBS-EOF PIC X VALUE "N".
           88 JOBS-EOF-YES VALUE "Y".
           88 JOBS-EOF-NO VALUE "N".
+      *> JOB browsing related variables
+       *>*********************************************
+      *> JOB BROWSE (IN-MEMORY LIST) VARIABLES      *
+      *>*********************************************
+       01 WS-JOB-CNT            PIC 99 VALUE 0.
+       01 WS-JOB-ID            PIC 99 VALUE 0.
+       01 WS-JOB-SELECT         PIC 99 VALUE 0.
+
+       01 WS-JOB-PARSE-LINE     PIC X(512).
+       01 WS-JOB-PARSE-POSTER   PIC X(20).
+       01 WS-JOB-PARSE-TITLE    PIC X(40).
+       01 WS-JOB-PARSE-DESC     PIC X(200).
+       01 WS-JOB-PARSE-EMP      PIC X(40).
+       01 WS-JOB-PARSE-LOC      PIC X(40).
+       01 WS-JOB-PARSE-SAL      PIC X(40).
+
+       01 WS-JOB-LIST.
+          05 WS-JOB-ITEM OCCURS 25 TIMES.
+             10 WS-JOBL-POSTER    PIC X(20).
+             10 WS-JOBL-TITLE     PIC X(40).
+             10 WS-JOBL-DESC      PIC X(200).
+             10 WS-JOBL-EMPLOYER  PIC X(40).
+             10 WS-JOBL-LOCATION  PIC X(40).
+             10 WS-JOBL-SALARY    PIC X(40).
+
 
        PROCEDURE DIVISION.
        MAIN.
@@ -2117,7 +2142,10 @@
            MOVE "2. Browse Jobs/Internships" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
-           MOVE "3. Back to Main Menu" TO WS-OUTLINE
+           MOVE "3. View My Applications" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
+           MOVE "4. Back to Main Menu" TO WS-OUTLINE
            PERFORM PRINT-LINE
 
            MOVE "Enter your choice:" TO WS-OUTLINE
@@ -2138,6 +2166,9 @@
                    PERFORM BROWSE-JOBS
                    PERFORM JOB-SEARCH-MENU
                WHEN "3"
+      *> second dev will implement this             PERFORM VIEW-MY-APPLICATIONS
+                   PERFORM JOB-SEARCH-MENU
+               WHEN "4"
                    EXIT PARAGRAPH
                WHEN OTHER
                    MOVE "Invalid choice." TO WS-OUTLINE
@@ -2269,14 +2300,11 @@
                    WS-JOBS-STAT
            END-IF.
 
-      *>---------------------------------------------
-      *> BROWSE-JOBS
-      *> Purpose: Browse existing job listings
-      *> Status: Under construction for this week
-      *> Called: From JOB-SEARCH-MENU option 2
-      *>---------------------------------------------
+      *> still writing this.....
+
+
+
+      *> Function for browsing different jobs
        BROWSE-JOBS.
-           MOVE "Browse Jobs/Internships is under construction."
-               TO WS-OUTLINE
-           PERFORM PRINT-LINE.
+       
        
