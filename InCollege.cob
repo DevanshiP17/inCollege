@@ -319,14 +319,6 @@
        01 WS-JOB-PARSE-LOC      PIC X(40).
        01 WS-JOB-PARSE-SAL      PIC X(40).
 
-       01 WS-JOB-LIST.
-          05 WS-JOB-ITEM OCCURS 25 TIMES.
-             10 WS-JOBL-POSTER    PIC X(20).
-             10 WS-JOBL-TITLE     PIC X(40).
-             10 WS-JOBL-DESC      PIC X(200).
-             10 WS-JOBL-EMPLOYER  PIC X(40).
-             10 WS-JOBL-LOCATION  PIC X(40).
-             10 WS-JOBL-SALARY    PIC X(40).
 
 
        PROCEDURE DIVISION.
@@ -2304,7 +2296,299 @@
 
 
 
-      *> Function for browsing different jobs
-       BROWSE-JOBS.
+      *> count the number of jobs for later reference
+       COUNT-JOBS.
+           MOVE 0 TO WS-JOB-CNT
+           SET JOBS-EOF-NO TO TRUE
        
+           OPEN INPUT JOBS-FILE
+           IF WS-JOBS-STAT NOT = "00"
+               CLOSE JOBS-FILE
+               EXIT PARAGRAPH
+           END-IF
+       
+           PERFORM UNTIL JOBS-EOF-YES
+               READ JOBS-FILE INTO WS-JOB-LINE
+                   AT END
+                       SET JOBS-EOF-YES TO TRUE
+                   NOT AT END
+                       IF FUNCTION TRIM(WS-JOB-LINE) NOT = SPACES
+                           ADD 1 TO WS-JOB-CNT
+                       END-IF
+               END-READ
+           END-PERFORM
+
+           CLOSE JOBS-FILE
+           SET JOBS-EOF-NO TO TRUE.
+      *> read jobs file until EOF of jobs file, each job will have a summary printed
+
+       DISPLAY-JOB-LIST.
+           MOVE 0 TO WS-JOB-ID
+           SET JOBS-EOF-NO TO TRUE
+       
+           OPEN INPUT JOBS-FILE
+           IF WS-JOBS-STAT NOT = "00"
+               CLOSE JOBS-FILE
+               EXIT PARAGRAPH
+           END-IF
+       
+           PERFORM UNTIL JOBS-EOF-YES
+               READ JOBS-FILE INTO WS-JOB-LINE
+                   AT END
+                       SET JOBS-EOF-YES TO TRUE
+                   NOT AT END
+                       IF FUNCTION TRIM(WS-JOB-LINE) NOT = SPACES
+                           ADD 1 TO WS-JOB-ID
+                           PERFORM PARSE-JOB-LINE-FOR-SUMMARY
+                           PERFORM PRINT-JOB-SUMMARY
+                       END-IF
+               END-READ
+           END-PERFORM
+       
+           CLOSE JOBS-FILE
+           SET JOBS-EOF-NO TO TRUE.
+      *> does same as function that parses each job fully, but
+      *> does not move the data into the main WS-JOB-* fields
+       PARSE-JOB-LINE-FOR-SUMMARY.
+           MOVE SPACES TO WS-JOB-PARSE-POSTER
+           MOVE SPACES TO WS-JOB-PARSE-TITLE
+           MOVE SPACES TO WS-JOB-PARSE-DESC
+           MOVE SPACES TO WS-JOB-PARSE-EMP
+           MOVE SPACES TO WS-JOB-PARSE-LOC
+           MOVE SPACES TO WS-JOB-PARSE-SAL
+       
+           UNSTRING WS-JOB-LINE
+               DELIMITED BY "|"
+               INTO WS-JOB-PARSE-POSTER
+                    WS-JOB-PARSE-TITLE
+                    WS-JOB-PARSE-DESC
+                    WS-JOB-PARSE-EMP
+                    WS-JOB-PARSE-LOC
+                    WS-JOB-PARSE-SAL
+           END-UNSTRING.
+      *> use data in parsed fields to print custom "summary" for each job
+     
+       PRINT-JOB-SUMMARY.
+           MOVE SPACES TO WS-OUTLINE
+           STRING
+               FUNCTION TRIM(WS-JOB-PARSE-TITLE) DELIMITED BY SIZE
+               " at " DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-PARSE-EMP) DELIMITED BY SIZE
+               " (" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-PARSE-LOC) DELIMITED BY SIZE
+               ")" DELIMITED BY SIZE
+               INTO WS-OUTLINE
+           END-STRING
+           PERFORM PRINT-LINE.
+      *> function that reads each job line by line until the job ID#
+      *> matches the one selected. When job is found, function terminates
+      *> and does basic clean up
+       LOAD-JOB-BY-NUM.
+           
+           MOVE 0 TO WS-JOB-ID
+           SET JOBS-EOF-NO TO TRUE
+       
+           OPEN INPUT JOBS-FILE
+           IF WS-JOBS-STAT NOT = "00"
+               CLOSE JOBS-FILE
+               EXIT PARAGRAPH
+           END-IF
+      *>   read data from jobs file line by line
+           PERFORM UNTIL JOBS-EOF-YES
+               READ JOBS-FILE INTO WS-JOB-LINE
+                   AT END
+                       SET JOBS-EOF-YES TO TRUE
+                   NOT AT END
+                       IF FUNCTION TRIM(WS-JOB-LINE) NOT = SPACES
+                           ADD 1 TO WS-JOB-ID
+                           IF WS-JOB-ID = WS-JOB-SELECT
+                               PERFORM PARSE-JOB-LINE-FULL
+                               SET JOBS-EOF-YES TO TRUE
+                           END-IF
+                       END-IF
+               END-READ
+           END-PERFORM
+       
+           CLOSE JOBS-FILE
+           SET JOBS-EOF-NO TO TRUE.
+
+       *> job line is parsed fully, including unused poster field
+       *> this is because parsing without requires wasted computation
+       PARSE-JOB-LINE-FULL.
+           *> despite ignoring poster field, will still need it for parsing
+           MOVE SPACES TO WS-JOB-PARSE-POSTER
+           MOVE SPACES TO WS-JOB-PARSE-TITLE
+           MOVE SPACES TO WS-JOB-PARSE-DESC
+           MOVE SPACES TO WS-JOB-PARSE-EMP
+           MOVE SPACES TO WS-JOB-PARSE-LOC
+           MOVE SPACES TO WS-JOB-PARSE-SAL
+       
+           UNSTRING WS-JOB-LINE
+               DELIMITED BY "|"
+               INTO WS-JOB-PARSE-POSTER
+                    WS-JOB-PARSE-TITLE
+                    WS-JOB-PARSE-DESC
+                    WS-JOB-PARSE-EMP
+                    WS-JOB-PARSE-LOC
+                    WS-JOB-PARSE-SAL
+           END-UNSTRING
+       
+           MOVE FUNCTION TRIM(WS-JOB-PARSE-TITLE) TO WS-JOB-TITLE
+           MOVE FUNCTION TRIM(WS-JOB-PARSE-DESC)  TO WS-JOB-DESC
+           MOVE FUNCTION TRIM(WS-JOB-PARSE-EMP)   TO WS-JOB-EMPLOYER
+           MOVE FUNCTION TRIM(WS-JOB-PARSE-LOC)   TO WS-JOB-LOCATION
+           MOVE FUNCTION TRIM(WS-JOB-PARSE-SAL)   TO WS-JOB-SALARY.
+
+
+
+
+      *>function to display jobs details, ignores poster field
+      *> poster field was used by prior dev(s)
+       VIEW-JOB-DETAILS.
+           MOVE "--- Job details ---" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+       
+           MOVE SPACES TO WS-OUTLINE
+           STRING "Title: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-JOB-TITLE) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
+           END-STRING
+           PERFORM PRINT-LINE
+       
+           MOVE SPACES TO WS-OUTLINE
+           STRING "description: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-JOB-DESC) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
+           END-STRING
+           PERFORM PRINT-LINE
+       
+           MOVE SPACES TO WS-OUTLINE
+           STRING "Employer: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-JOB-EMPLOYER) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
+           END-STRING
+           PERFORM PRINT-LINE
+       
+           MOVE SPACES TO WS-OUTLINE
+           STRING "Location: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-JOB-LOCATION) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
+           END-STRING
+           PERFORM PRINT-LINE
+      *> this means if salary is not "NONE" or blank, print the salary line
+      *> else, do not
+           IF FUNCTION TRIM(WS-JOB-SALARY) NOT = SPACES
+              AND FUNCTION UPPER-CASE(FUNCTION TRIM(WS-JOB-SALARY)) NOT = "NONE"
+               MOVE SPACES TO WS-OUTLINE
+               STRING "Salary: " DELIMITED BY SIZE
+                      FUNCTION TRIM(WS-JOB-SALARY) DELIMITED BY SIZE
+                      INTO WS-OUTLINE
+               END-STRING
+               PERFORM PRINT-LINE
+           END-IF
+       
+           MOVE "-------------------" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+       
+           MOVE "Apply for this job" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "Back to job list" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+       
+           MOVE "Enter your choice:" TO WS-OUTLINE
+           PERFORM PRINT-INLINE
+           PERFORM REQUIRE-INPUT
+       
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
+       
+           MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+       
+           EVALUATE TRUE
+               WHEN WS-TRIMMED = "1"
+                 OR WS-TRIMMED = "Apply for this job"
+                   PERFORM NOTE-JOB-APPLICATION
+                   MOVE SPACES TO WS-OUTLINE
+                   STRING
+                       "Your application for " DELIMITED BY SIZE
+                       FUNCTION TRIM(WS-JOB-TITLE) DELIMITED BY SIZE
+                       " at " DELIMITED BY SIZE
+                       FUNCTION TRIM(WS-JOB-EMPLOYER) DELIMITED BY SIZE
+                       " has been submitted." DELIMITED BY SIZE
+                       INTO WS-OUTLINE
+                   END-STRING
+                   PERFORM PRINT-LINE
+               WHEN OTHER
+                   CONTINUE
+           END-EVALUATE.
+
+      *> browse job function
+       BROWSE-JOBS.
+           PERFORM COUNT-JOBS
+
+           MOVE "--- Available Job Listings ---" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
+           IF WS-JOB-CNT = 0
+               MOVE "----------------------------" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               EXIT PARAGRAPH
+           END-IF
+
+           PERFORM DISPLAY-JOB-LIST
+
+           MOVE "----------------------------" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           *> an impossible number for job selection 
+           MOVE 10000 TO WS-JOB-SELECT
+           PERFORM UNTIL WS-JOB-SELECT = 0 OR EXIT-YES OR EOF-YES
+               MOVE "Enter job number to view details, or 0 to go back:"
+               TO WS-OUTLINE
+               PERFORM PRINT-INLINE
+
+               PERFORM REQUIRE-INPUT
+               IF EXIT-YES OR EOF-YES
+                   EXIT PARAGRAPH
+               END-IF
+
+               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+      *> if job number is numeric it is valid for now...
+               IF WS-TRIMMED IS NUMERIC
+                   MOVE WS-TRIMMED TO WS-JOB-SELECT
+               ELSE
+                   MOVE "Invalid choice." TO WS-OUTLINE
+                   PERFORM PRINT-LINE
+                   MOVE 10000 TO WS-JOB-SELECT
+               END-IF
+      *> if user enters 0, they want to go back
+               IF WS-JOB-SELECT = 0
+                   EXIT PERFORM
+               END-IF
+      *> if user inputs a job # that is impossible or over current count
+      *>   then give invalid choice prompt
+               IF WS-JOB-SELECT < 1 OR WS-JOB-SELECT > WS-JOB-CNT
+                   MOVE "Invalid choice." TO WS-OUTLINE
+                   PERFORM PRINT-LINE
+               ELSE
+      *> if selection is valid, load the job and view its details
+                   PERFORM LOAD-JOB-BY-NUM
+
+                   PERFORM VIEW-JOB-DETAILS
+
+                   MOVE "--- Available job listings ---" TO WS-OUTLINE
+                   PERFORM PRINT-LINE
+                   PERFORM DISPLAY-JOB-LIST
+                   MOVE "----------------------------" TO WS-OUTLINE
+                   PERFORM PRINT-LINE
+               END-IF
+
+           END-PERFORM
+
+           MOVE 0 TO WS-JOB-SELECT.
+
+      *> other dev will implement this and view my application functionality
+      *> for job search menu
+      *> this implies some kind of file persistence
+       NOTE-JOB-APPLICATION.
        
