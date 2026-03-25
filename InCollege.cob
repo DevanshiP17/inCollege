@@ -41,6 +41,10 @@
                ASSIGN TO "jobs.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-JOBS-STAT.
+           SELECT OPTIONAL APPS-FILE
+               ASSIGN TO "applications.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-APPS-STAT.
 
        DATA DIVISION.
        FILE SECTION.
@@ -75,6 +79,9 @@
        FD JOBS-FILE.
        01 JOBS-REC PIC X(512).
 
+       FD APPS-FILE.
+       01 APPS-REC PIC X(256).
+
        WORKING-STORAGE SECTION.
 
       *> file status
@@ -97,6 +104,20 @@
        *> JOBS FILE STATUS CODE                      *
        *>*********************************************
        01 WS-JOBS-STAT PIC XX.
+
+       01 WS-APPS-STAT PIC XX.
+       01 WS-APPS-LINE PIC X(256).
+       01 WS-APPS-EOF PIC X VALUE "N".
+          88 APPS-EOF-YES VALUE "Y".
+          88 APPS-EOF-NO VALUE "N".
+
+       *> Parsed fields for reading applications back
+       01 WS-APP-PARSE-USER    PIC X(20).
+       01 WS-APP-PARSE-TITLE   PIC X(40).
+       01 WS-APP-PARSE-EMP     PIC X(40).
+       01 WS-APP-PARSE-LOC     PIC X(40).
+       01 WS-APP-PARSE-JOBNUM  PIC 99.
+       01 WS-APPS-COUNT        PIC 99 VALUE 0.
 
       *> input handling
        01 WS-INLINE PIC X(256).
@@ -307,9 +328,9 @@
        *>*********************************************
       *> JOB BROWSE (IN-MEMORY LIST) VARIABLES      *
       *>*********************************************
-       01 WS-JOB-CNT            PIC 99 VALUE 0.
-       01 WS-JOB-ID            PIC 99 VALUE 0.
-       01 WS-JOB-SELECT         PIC 99 VALUE 0.
+       01 WS-JOB-CNT            PIC 999 VALUE 0.
+       01 WS-JOB-ID             PIC 999 VALUE 0.
+       01 WS-JOB-SELECT         PIC 9(5) VALUE 0.
 
        01 WS-JOB-PARSE-LINE     PIC X(512).
        01 WS-JOB-PARSE-POSTER   PIC X(20).
@@ -416,6 +437,25 @@
                END-IF
            END-IF.
 
+           *> Initialize applications.dat (create if doesn't exist)
+           OPEN INPUT APPS-FILE
+           IF WS-APPS-STAT = "00"
+               CLOSE APPS-FILE
+           ELSE
+               IF WS-APPS-STAT = "05" OR WS-APPS-STAT = "35"
+                   OPEN OUTPUT APPS-FILE
+                   IF WS-APPS-STAT = "00" OR WS-APPS-STAT = "05"
+                       CLOSE APPS-FILE
+                   ELSE
+                       DISPLAY "ERROR: Cannot create applications.dat. Status="
+                           WS-APPS-STAT
+                   END-IF
+               ELSE
+                   DISPLAY "ERROR: Cannot open applications.dat. Status="
+                       WS-APPS-STAT
+               END-IF
+           END-IF.
+
        CLOSE-FILES.
            CLOSE IN-FILE
            CLOSE OUT-FILE
@@ -423,7 +463,8 @@
            CLOSE PROFILES-FILE
            CLOSE TEMP-PROFILES-FILE
            CLOSE CONN-FILE
-           CLOSE JOBS-FILE.
+           CLOSE JOBS-FILE
+           CLOSE APPS-FILE.
 
       *> get next input from file, if at end, void input line
       *> and set EOF flag yes flag to true
@@ -2158,7 +2199,7 @@
                    PERFORM BROWSE-JOBS
                    PERFORM JOB-SEARCH-MENU
                WHEN "3"
-      *> second dev will implement this             PERFORM VIEW-MY-APPLICATIONS
+                   PERFORM VIEW-MY-APPLICATIONS
                    PERFORM JOB-SEARCH-MENU
                WHEN "4"
                    EXIT PARAGRAPH
@@ -2553,34 +2594,33 @@
                END-IF
 
                MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-      *> if job number is numeric it is valid for now...
-               IF WS-TRIMMED IS NUMERIC
-                   MOVE WS-TRIMMED TO WS-JOB-SELECT
-               ELSE
+
+               MOVE FUNCTION NUMVAL(WS-TRIMMED) TO WS-JOB-SELECT
+
+               IF WS-JOB-SELECT = 0 AND WS-TRIMMED NOT = "0"
                    MOVE "Invalid choice." TO WS-OUTLINE
                    PERFORM PRINT-LINE
-                   MOVE 10000 TO WS-JOB-SELECT
-               END-IF
-      *> if user enters 0, they want to go back
-               IF WS-JOB-SELECT = 0
-                   EXIT PERFORM
-               END-IF
-      *> if user inputs a job # that is impossible or over current count
-      *>   then give invalid choice prompt
-               IF WS-JOB-SELECT < 1 OR WS-JOB-SELECT > WS-JOB-CNT
-                   MOVE "Invalid choice." TO WS-OUTLINE
-                   PERFORM PRINT-LINE
+                   MOVE 99999 TO WS-JOB-SELECT
                ELSE
-      *> if selection is valid, load the job and view its details
-                   PERFORM LOAD-JOB-BY-NUM
+                   IF WS-JOB-SELECT = 0
+                       EXIT PERFORM
+                   END-IF
 
-                   PERFORM VIEW-JOB-DETAILS
+                   IF WS-JOB-SELECT < 1 OR WS-JOB-SELECT > WS-JOB-CNT
+                       MOVE "Invalid choice." TO WS-OUTLINE
+                       PERFORM PRINT-LINE
+                       MOVE 99999 TO WS-JOB-SELECT
+                   ELSE
+                       PERFORM LOAD-JOB-BY-NUM
 
-                   MOVE "--- Available job listings ---" TO WS-OUTLINE
-                   PERFORM PRINT-LINE
-                   PERFORM DISPLAY-JOB-LIST
-                   MOVE "----------------------------" TO WS-OUTLINE
-                   PERFORM PRINT-LINE
+                       PERFORM VIEW-JOB-DETAILS
+
+                       MOVE "--- Available job listings ---" TO WS-OUTLINE
+                       PERFORM PRINT-LINE
+                       PERFORM DISPLAY-JOB-LIST
+                       MOVE "----------------------------" TO WS-OUTLINE
+                       PERFORM PRINT-LINE
+                   END-IF
                END-IF
 
            END-PERFORM
@@ -2591,4 +2631,144 @@
       *> for job search menu
       *> this implies some kind of file persistence
        NOTE-JOB-APPLICATION.
-       
+           *> Build pipe-delimited application record:
+           *> username|job_title|employer|location|job_number
+           MOVE SPACES TO WS-APPS-LINE
+           STRING
+               FUNCTION TRIM(WS-CURRENT-USERNAME)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-TITLE)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-EMPLOYER)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-LOCATION)
+               DELIMITED BY SIZE
+               "|" DELIMITED BY SIZE
+               WS-JOB-SELECT
+               DELIMITED BY SIZE
+               INTO WS-APPS-LINE
+           END-STRING
+
+           OPEN EXTEND APPS-FILE
+
+           IF WS-APPS-STAT = "41"
+               CLOSE APPS-FILE
+               OPEN EXTEND APPS-FILE
+           END-IF
+
+           IF WS-APPS-STAT = "00" OR WS-APPS-STAT = "05"
+               WRITE APPS-REC FROM WS-APPS-LINE
+               CLOSE APPS-FILE
+           ELSE
+               DISPLAY "ERROR: Cannot write to applications.dat. Status="
+                   WS-APPS-STAT
+           END-IF.
+
+       VIEW-MY-APPLICATIONS.
+           MOVE 0 TO WS-APPS-COUNT
+           SET APPS-EOF-NO TO TRUE
+
+           *> Print report header
+           MOVE "--- Your Job Applications ---" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE SPACES TO WS-OUTLINE
+           STRING
+               "Application Summary for "
+               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-CURRENT-USERNAME)
+               DELIMITED BY SIZE
+               INTO WS-OUTLINE
+           END-STRING
+           PERFORM PRINT-LINE
+           MOVE "------------------------------" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+
+           *> Open applications file
+           OPEN INPUT APPS-FILE
+           IF WS-APPS-STAT NOT = "00"
+               MOVE "No applications found." TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "------------------------------" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               EXIT PARAGRAPH
+           END-IF
+
+           *> Read and display each matching application
+           PERFORM UNTIL APPS-EOF-YES
+               READ APPS-FILE INTO WS-APPS-LINE
+                   AT END
+                       SET APPS-EOF-YES TO TRUE
+                   NOT AT END
+                       *> Parse the record
+                       MOVE SPACES TO WS-APP-PARSE-USER
+                       MOVE SPACES TO WS-APP-PARSE-TITLE
+                       MOVE SPACES TO WS-APP-PARSE-EMP
+                       MOVE SPACES TO WS-APP-PARSE-LOC
+
+                       UNSTRING WS-APPS-LINE
+                           DELIMITED BY "|"
+                           INTO WS-APP-PARSE-USER
+                                WS-APP-PARSE-TITLE
+                                WS-APP-PARSE-EMP
+                                WS-APP-PARSE-LOC
+                                WS-APP-PARSE-JOBNUM
+                       END-UNSTRING
+
+                       *> Only display if it belongs to current user
+                       IF FUNCTION TRIM(WS-APP-PARSE-USER) =
+                          FUNCTION TRIM(WS-CURRENT-USERNAME)
+                           ADD 1 TO WS-APPS-COUNT
+
+                           MOVE SPACES TO WS-OUTLINE
+                           STRING "Job Title: " DELIMITED BY SIZE
+                                  FUNCTION TRIM(WS-APP-PARSE-TITLE)
+                                  DELIMITED BY SIZE
+                                  INTO WS-OUTLINE
+                           END-STRING
+                           PERFORM PRINT-LINE
+
+                           MOVE SPACES TO WS-OUTLINE
+                           STRING "Employer: " DELIMITED BY SIZE
+                                  FUNCTION TRIM(WS-APP-PARSE-EMP)
+                                  DELIMITED BY SIZE
+                                  INTO WS-OUTLINE
+                           END-STRING
+                           PERFORM PRINT-LINE
+
+                           MOVE SPACES TO WS-OUTLINE
+                           STRING "Location: " DELIMITED BY SIZE
+                                  FUNCTION TRIM(WS-APP-PARSE-LOC)
+                                  DELIMITED BY SIZE
+                                  INTO WS-OUTLINE
+                           END-STRING
+                           PERFORM PRINT-LINE
+
+                           MOVE "---" TO WS-OUTLINE
+                           PERFORM PRINT-LINE
+                       END-IF
+               END-READ
+           END-PERFORM
+
+           CLOSE APPS-FILE
+           SET APPS-EOF-NO TO TRUE
+
+           *> Handle empty case
+           IF WS-APPS-COUNT = 0
+               MOVE "You have not applied to any jobs yet." TO WS-OUTLINE
+               PERFORM PRINT-LINE
+           END-IF
+
+           *> Print total count footer
+           MOVE "------------------------------" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE SPACES TO WS-OUTLINE
+           STRING "Total Applications: " DELIMITED BY SIZE
+                  WS-APPS-COUNT DELIMITED BY SIZE
+                  INTO WS-OUTLINE
+           END-STRING
+           PERFORM PRINT-LINE
+           MOVE "------------------------------" TO WS-OUTLINE
+           PERFORM PRINT-LINE.

@@ -2,11 +2,10 @@
 alice
 Alice1!pass
 8
+2
 1
-DevOps Intern
-Support CI/CD pipeline setup and cloud infrastructure deployment.
-InfraCloud
-Remote
-$30/hour
+1
+0
 3
+4
 7
