@@ -117,7 +117,8 @@
        01 WS-APP-PARSE-EMP     PIC X(40).
        01 WS-APP-PARSE-LOC     PIC X(40).
        01 WS-APP-PARSE-JOBNUM  PIC 99.
-       01 WS-APPS-COUNT        PIC 99 VALUE 0.
+       01 WS-APPS-COUNT-NUM    PIC 99 VALUE 0.
+       01 WS-APPS-COUNT         PIC Z9.
 
       *> input handling
        01 WS-INLINE PIC X(256).
@@ -2497,7 +2498,7 @@
            PERFORM PRINT-LINE
        
            MOVE SPACES TO WS-OUTLINE
-           STRING "description: " DELIMITED BY SIZE
+           STRING "Description: " DELIMITED BY SIZE
                   FUNCTION TRIM(WS-JOB-DESC) DELIMITED BY SIZE
                   INTO WS-OUTLINE
            END-STRING
@@ -2668,7 +2669,7 @@
            END-IF.
 
        VIEW-MY-APPLICATIONS.
-           MOVE 0 TO WS-APPS-COUNT
+           MOVE 0 TO WS-APPS-COUNT-NUM
            SET APPS-EOF-NO TO TRUE
 
            *> Print report header
@@ -2720,7 +2721,7 @@
                        *> Only display if it belongs to current user
                        IF FUNCTION TRIM(WS-APP-PARSE-USER) =
                           FUNCTION TRIM(WS-CURRENT-USERNAME)
-                           ADD 1 TO WS-APPS-COUNT
+                           ADD 1 TO WS-APPS-COUNT-NUM
 
                            MOVE SPACES TO WS-OUTLINE
                            STRING "Job Title: " DELIMITED BY SIZE
@@ -2756,7 +2757,7 @@
            SET APPS-EOF-NO TO TRUE
 
            *> Handle empty case
-           IF WS-APPS-COUNT = 0
+           IF WS-APPS-COUNT-NUM = 0
                MOVE "You have not applied to any jobs yet." TO WS-OUTLINE
                PERFORM PRINT-LINE
            END-IF
@@ -2765,6 +2766,7 @@
            MOVE "------------------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE SPACES TO WS-OUTLINE
+           MOVE WS-APPS-COUNT-NUM TO WS-APPS-COUNT
            STRING "Total Applications: " DELIMITED BY SIZE
                   WS-APPS-COUNT DELIMITED BY SIZE
                   INTO WS-OUTLINE
