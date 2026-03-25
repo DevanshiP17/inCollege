@@ -2,6 +2,11 @@
 alice
 Alice1!pass
 8
-3
+2
+99
+abc
+10
+-1
+0
 4
 7

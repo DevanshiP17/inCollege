@@ -1,6 +1,0 @@
-1
-testuser
-Test1234!
-6
-3
-logout

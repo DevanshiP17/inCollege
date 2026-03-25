@@ -1,7 +1,0 @@
-1
-TestUser3
-Password3
-4
-reject
-logout
-
