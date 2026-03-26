@@ -110,15 +110,19 @@
        01 WS-APPS-EOF PIC X VALUE "N".
           88 APPS-EOF-YES VALUE "Y".
           88 APPS-EOF-NO VALUE "N".
+       01 WS-ALREADY-APPLIED PIC X VALUE "N".
+          88 ALREADY-APPLIED-YES VALUE "Y".
+          88 ALREADY-APPLIED-NO  VALUE "N".
 
        *> Parsed fields for reading applications back
        01 WS-APP-PARSE-USER    PIC X(20).
        01 WS-APP-PARSE-TITLE   PIC X(40).
        01 WS-APP-PARSE-EMP     PIC X(40).
        01 WS-APP-PARSE-LOC     PIC X(40).
-       01 WS-APP-PARSE-JOBNUM  PIC 99.
+       01 WS-APP-PARSE-JOBNUM  PIC X(6).
        01 WS-APPS-COUNT-NUM    PIC 99 VALUE 0.
        01 WS-APPS-COUNT         PIC Z9.
+       01 WS-JOB-NUMSTR         PIC X(6) VALUE SPACES.
 
       *> input handling
        01 WS-INLINE PIC X(256).
@@ -2549,18 +2553,25 @@
        
            EVALUATE TRUE
                WHEN WS-TRIMMED = "1"
-                 OR WS-TRIMMED = "Apply for this job"
-                   PERFORM NOTE-JOB-APPLICATION
-                   MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       "Your application for " DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-JOB-TITLE) DELIMITED BY SIZE
-                       " at " DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-JOB-EMPLOYER) DELIMITED BY SIZE
-                       " has been submitted." DELIMITED BY SIZE
-                       INTO WS-OUTLINE
-                   END-STRING
-                   PERFORM PRINT-LINE
+              OR WS-TRIMMED = "Apply for this job"
+                  PERFORM CHECK-ALREADY-APPLIED
+                  IF ALREADY-APPLIED-YES
+                      MOVE "You have already applied for this job."
+                          TO WS-OUTLINE
+                      PERFORM PRINT-LINE
+                  ELSE
+                      PERFORM NOTE-JOB-APPLICATION
+                      MOVE SPACES TO WS-OUTLINE
+                      STRING
+                          "Your application for " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-JOB-TITLE) DELIMITED BY SIZE
+                          " at " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-JOB-EMPLOYER) DELIMITED BY SIZE
+                          " has been submitted." DELIMITED BY SIZE
+                          INTO WS-OUTLINE
+                      END-STRING
+                      PERFORM PRINT-LINE
+                  END-IF
                WHEN OTHER
                    CONTINUE
            END-EVALUATE.
@@ -2631,9 +2642,54 @@
       *> other dev will implement this and view my application functionality
       *> for job search menu
       *> this implies some kind of file persistence
+
+      CHECK-ALREADY-APPLIED.
+           SET ALREADY-APPLIED-NO TO TRUE
+           SET APPS-EOF-NO TO TRUE
+
+           CLOSE APPS-FILE
+           OPEN INPUT APPS-FILE
+           IF WS-APPS-STAT NOT = "00"
+               EXIT PARAGRAPH
+           END-IF
+
+           PERFORM UNTIL APPS-EOF-YES
+               READ APPS-FILE INTO WS-APPS-LINE
+                   AT END
+                       SET APPS-EOF-YES TO TRUE
+                   NOT AT END
+                       MOVE SPACES TO WS-APP-PARSE-USER
+                       MOVE SPACES TO WS-APP-PARSE-JOBNUM
+
+                       UNSTRING WS-APPS-LINE
+                           DELIMITED BY "|"
+                           INTO WS-APP-PARSE-USER
+                                WS-APP-PARSE-TITLE
+                                WS-APP-PARSE-EMP
+                                WS-APP-PARSE-LOC
+                                WS-APP-PARSE-JOBNUM
+                       END-UNSTRING
+
+                       MOVE SPACES TO WS-JOB-NUMSTR
+                       MOVE WS-JOB-SELECT TO WS-JOB-NUMSTR
+
+                       IF FUNCTION TRIM(WS-APP-PARSE-USER) =
+                          FUNCTION TRIM(WS-CURRENT-USERNAME)
+                         AND FUNCTION TRIM(WS-APP-PARSE-JOBNUM) =
+                             FUNCTION TRIM(WS-JOB-NUMSTR)
+                           SET ALREADY-APPLIED-YES TO TRUE
+                           SET APPS-EOF-YES TO TRUE
+                       END-IF
+               END-READ
+           END-PERFORM
+
+           CLOSE APPS-FILE
+           SET APPS-EOF-NO TO TRUE.
        NOTE-JOB-APPLICATION.
-           *> Build pipe-delimited application record:
-           *> username|job_title|employer|location|job_number
+           *> Convert numeric to trimmed string — avoids "00001" padding
+           MOVE SPACES TO WS-JOB-NUMSTR
+           MOVE WS-JOB-SELECT TO WS-JOB-NUMSTR
+
            MOVE SPACES TO WS-APPS-LINE
            STRING
                FUNCTION TRIM(WS-CURRENT-USERNAME)
@@ -2648,17 +2704,14 @@
                FUNCTION TRIM(WS-JOB-LOCATION)
                DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               WS-JOB-SELECT
+               FUNCTION TRIM(WS-JOB-NUMSTR)
                DELIMITED BY SIZE
                INTO WS-APPS-LINE
            END-STRING
 
+           *> Always CLOSE before OPEN EXTEND — eliminates status-41 entirely
+           CLOSE APPS-FILE
            OPEN EXTEND APPS-FILE
-
-           IF WS-APPS-STAT = "41"
-               CLOSE APPS-FILE
-               OPEN EXTEND APPS-FILE
-           END-IF
 
            IF WS-APPS-STAT = "00" OR WS-APPS-STAT = "05"
                WRITE APPS-REC FROM WS-APPS-LINE
@@ -2774,3 +2827,4 @@
            PERFORM PRINT-LINE
            MOVE "------------------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE.
+           
