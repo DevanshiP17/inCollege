@@ -43,7 +43,7 @@ Salary: $25/hour
 Apply for this job
 Back to job list
 Enter your choice: 1
-Your application for Software Intern at Tech Corp has been submitted.
+You have already applied for this job.
 --- Available job listings ---
 Software Intern at Tech Corp (Tampa, FL)
 Data Analyst at DataWorks Inc (Remote)
@@ -65,7 +65,7 @@ Location: Remote
 Apply for this job
 Back to job list
 Enter your choice: 1
-Your application for Data Analyst at DataWorks Inc has been submitted.
+You have already applied for this job.
 --- Available job listings ---
 Software Intern at Tech Corp (Tampa, FL)
 Data Analyst at DataWorks Inc (Remote)
@@ -88,7 +88,7 @@ Salary: $80000/year
 Apply for this job
 Back to job list
 Enter your choice: 1
-Your application for SeniorSoftwareEngineerInternship2025XX at Acme Corporation has been submitted.
+You have already applied for this job.
 --- Available job listings ---
 Software Intern at Tech Corp (Tampa, FL)
 Data Analyst at DataWorks Inc (Remote)
