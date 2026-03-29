@@ -30,21 +30,28 @@
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS TEMP-PROFILES-STATUS.
 
-           *> NEW: Connection requests file
+           *> Connection requests file
            SELECT OPTIONAL CONN-FILE
                ASSIGN TO "connections.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-CONN-STAT.
 
-           *> NEW: Jobs/Internships file
+           *> Jobs/Internships file
            SELECT OPTIONAL JOBS-FILE
                ASSIGN TO "jobs.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-JOBS-STAT.
+
            SELECT OPTIONAL APPS-FILE
                ASSIGN TO "applications.dat"
                ORGANIZATION IS LINE SEQUENTIAL
                FILE STATUS IS WS-APPS-STAT.
+
+           *> WEEK 8: Messages file
+           SELECT OPTIONAL MSGS-FILE
+               ASSIGN TO "messages.dat"
+               ORGANIZATION IS LINE SEQUENTIAL
+               FILE STATUS IS WS-MSGS-STAT.
 
        DATA DIVISION.
        FILE SECTION.
@@ -58,51 +65,35 @@
        FD ACCT-FILE.
        01 ACCT-REC PIC X(256).
 
-       *>*********************************************
-       *> PROFILE FILE DESCRIPTORS                   *
-       *>*********************************************
        FD PROFILES-FILE.
        01 PROFILE-REC PIC X(512).
        
        FD TEMP-PROFILES-FILE.
        01 TEMP-PROFILE-REC PIC X(512).
 
-       *>*********************************************
-       *> CONNECTION FILE DESCRIPTOR                 *
-       *>*********************************************
        FD CONN-FILE.
        01 CONN-REC PIC X(256).
 
-       *>*********************************************
-       *> JOBS FILE DESCRIPTOR                       *
-       *>*********************************************
        FD JOBS-FILE.
        01 JOBS-REC PIC X(512).
 
        FD APPS-FILE.
        01 APPS-REC PIC X(256).
 
+       *>*********************************************
+       *> MESSAGES FILE DESCRIPTOR (WEEK 8)          *
+       *>*********************************************
+       FD MSGS-FILE.
+       01 MSGS-REC PIC X(512).
+
        WORKING-STORAGE SECTION.
 
-      *> file status
        01 WS-IN-STAT PIC XX.
        01 WS-OUT-STAT PIC XX.
        01 WS-ACCT-STAT PIC XX.
-
-       *>*********************************************
-       *> PROFILE FILE STATUS CODES                  *
-       *>*********************************************
        01 PROFILES-STATUS PIC XX.
        01 TEMP-PROFILES-STATUS PIC XX.
-
-       *>*********************************************
-       *> CONNECTION FILE STATUS CODE                *
-       *>*********************************************
        01 WS-CONN-STAT PIC XX.
-
-       *>*********************************************
-       *> JOBS FILE STATUS CODE                      *
-       *>*********************************************
        01 WS-JOBS-STAT PIC XX.
 
        01 WS-APPS-STAT PIC XX.
@@ -111,16 +102,17 @@
           88 APPS-EOF-YES VALUE "Y".
           88 APPS-EOF-NO VALUE "N".
 
-       *> Parsed fields for reading applications back
+       *> WEEK 8: Messages file status
+       01 WS-MSGS-STAT PIC XX.
+
        01 WS-APP-PARSE-USER    PIC X(20).
        01 WS-APP-PARSE-TITLE   PIC X(40).
        01 WS-APP-PARSE-EMP     PIC X(40).
        01 WS-APP-PARSE-LOC     PIC X(40).
        01 WS-APP-PARSE-JOBNUM  PIC 99.
        01 WS-APPS-COUNT-NUM    PIC 99 VALUE 0.
-       01 WS-APPS-COUNT         PIC Z9.
+       01 WS-APPS-COUNT        PIC Z9.
 
-      *> input handling
        01 WS-INLINE PIC X(256).
        01 WS-OUTLINE PIC X(256).
        01 WS-PREV-PROMPT PIC X(256).
@@ -128,9 +120,7 @@
        01 WS-EOF-FLAG PIC X VALUE "N".
           88 EOF-YES VALUE "Y".
           88 EOF-NO  VALUE "N".
-          
-      *> had to add a dedicated eof flag for accounts file due to issue
-      *> with WS-EOF-FLAG reuse between paragraphs
+
        01 WS-ACCT_EOF-FLAG PIC X VALUE "N".
           88 ACCT-EOF-YES VALUE "Y".
           88 ACCT-EOF-NO  VALUE "N".
@@ -140,10 +130,8 @@
           88 EXIT-NO VALUE "N".
 
        01 WS-CHOICE PIC X(64).
-      *> trimming will be used to account for weird EOF behavior
        01 WS-TRIMMED PIC X(64).
 
-      *> Account storage - supports up to 5 accounts
        01 WS-ACCOUNTS.
           05 WS-ACCOUNT OCCURS 5 TIMES.
              10 WS-USERNAME PIC X(20).
@@ -151,7 +139,6 @@
 
        01 WS-ACCOUNT-COUNT PIC 9 VALUE 0.
 
-      *> Current account being processed
        01 WS-CURRENT-USERNAME       PIC X(20).
        01 WS-CURRENT-PASSWORD       PIC X(12).
        01 WS-INPUT-PASSWORD         PIC X(64).
@@ -160,7 +147,6 @@
           88 USERNAME-FOUND         VALUE "Y".
           88 USERNAME-NOT-FOUND     VALUE "N".
 
-      *> password validation flags
        01 WS-PASS-FLAG PIC X VALUE "N".
           88 PASSWORD-VALID VALUE "Y".
           88 PASSWORD-INVALID VALUE "N".
@@ -173,22 +159,14 @@
        01 WS-CHAR-IDX PIC 99 VALUE 0.
        01 WS-CHAR PIC X.
 
-      *> persistence parsing/writing
        01 WS-ACCT-LINE              PIC X(256).
        01 WS-TMP-USER               PIC X(20).
        01 WS-TMP-PASS               PIC X(12).
        01 WS-I                      PIC 9 VALUE 0.
 
-       *>*********************************************
-       *> PROFILE PERSISTENCE VARIABLES              *
-       *>*********************************************
-       *> Profile line buffer for reading/writing
        01 WS-PROFILE-LINE PIC X(512).
-       
-       *> Temporary profile storage during rewrite
        01 WS-TEMP-PROFILE-LINE PIC X(512).
        
-       *> Parsed profile fields from file
        01 WS-PARSED-PROFILE.
           05 WS-PARSED-USERNAME    PIC X(20).
           05 WS-PARSED-FNAME       PIC X(20).
@@ -209,7 +187,6 @@
                 15 WS-PARSED-EDU-SCHOOL  PIC X(40).
                 15 WS-PARSED-EDU-YEAR    PIC X(20).
        
-       *> Profile processing flags
        01 WS-PROFILE-FOUND PIC X VALUE "N".
           88 PROFILE-EXISTS VALUE "Y".
           88 PROFILE-NOT-FOUND VALUE "N".
@@ -218,15 +195,9 @@
           88 PROFILE-EOF-YES VALUE "Y".
           88 PROFILE-EOF-NO VALUE "N".
        
-       *> UNSTRING pointer for parsing
        01 WS-UNSTRING-PTR PIC 999 VALUE 0.
-       
-       *> Counter for profile operations
        01 WS-PROFILE-COUNT PIC 999 VALUE 0.
       
-      *>*********************************************
-      *> USER SEARCH VARIABLES                      *
-      *>*********************************************
        01 WS-SEARCH-INPUT PIC X(256).
        01 WS-SEARCH-FNAME PIC X(20).
        01 WS-SEARCH-LNAME PIC X(20).
@@ -241,9 +212,6 @@
           88 SEARCH-EOF-YES VALUE "Y".
           88 SEARCH-EOF-NO VALUE "N".
 
-      *>*********************************************
-      *> CONNECTION REQUEST VARIABLES               *
-      *>*********************************************
        01 WS-CONN-LINE PIC X(256).
        01 WS-CONN-SENDER-PARSE PIC X(20).
        01 WS-CONN-RECIP-PARSE PIC X(20).
@@ -255,25 +223,19 @@
           88 CONN-EOF-YES VALUE "Y".
           88 CONN-EOF-NO VALUE "N".
 
-      *>*********************************************
-      *> PROFILE VARIABLES                          *
-      *>*********************************************
-      *> Profile set-up
        01 WS-PROFILE.
           05 WS-P-NAME.
              10 WS-P-FNAME  PIC X(20) VALUE SPACES.
-             10 WS-P-LNAME PIC X(20) VALUE SPACES. 
+             10 WS-P-LNAME  PIC X(20) VALUE SPACES. 
           05 WS-P-MAJOR       PIC X(40)  VALUE SPACES.
           05 WS-P-UNIVERSITY  PIC X(40)  VALUE SPACES.
           05 WS-P-GRAD-YEAR   PIC X(4)   VALUE SPACES.
           05 WS-P-ABOUT       PIC X(200) VALUE SPACES.
-      *> Education related information
           05 WS-P-EDU.
              10 WS-EDU OCCURS 3 TIMES.
                 15 WS-EDU-DEGREE  PIC X(40) VALUE SPACES.
                 15 WS-EDU-SCHOOL  PIC X(40) VALUE SPACES.
-                15 WS-EDU-YEAR    PIC X(20)  VALUE SPACES.
-      *> Work related information
+                15 WS-EDU-YEAR    PIC X(20) VALUE SPACES.
           05 WS-P-WORK.
              10 WS-WORK OCCURS 3 TIMES.
                 15 WS-WORK-TITLE     PIC X(40) VALUE SPACES.
@@ -281,21 +243,14 @@
                 15 WS-WORK-DATES     PIC X(40) VALUE SPACES.
                 15 WS-WORK-DESC      PIC X(100) VALUE SPACES.
 
-      *>*********************************************
-      *> CONNECTION ARRAY FOR MANAGE/VIEW NETWORK   *
-      *> Used by MANREQ_SRC.cob and VIEWNET_SRC.cob *
-      *>*********************************************
        01 WS-CONN-TOTAL PIC 99 VALUE 0.
        01 WS-CONN-IDX PIC 99 VALUE 0.
        01 WS-CONN-ARRAY.
           05 WS-CONN-ITEM OCCURS 25 TIMES.
              10 WS-CA-SENDER PIC X(20).
-             10 WS-CA-RECIP PIC X(20).
+             10 WS-CA-RECIP  PIC X(20).
              10 WS-CA-STATUS PIC X(20).
 
-      *>*********************************************
-      *> VIEW NETWORK VARIABLES                     *
-      *>*********************************************
        01 WS-NETWORK-DISPLAY-USER PIC X(20).
        01 WS-NET-FNAME PIC X(20).
        01 WS-NET-LNAME PIC X(20).
@@ -312,9 +267,6 @@
           88 NETWORK-PROFILE-FOUND VALUE "Y".
           88 NETWORK-PROFILE-NOT-FOUND VALUE "N".
 
-      *>*********************************************
-      *> JOB/INTERNSHIP VARIABLES                   *
-      *>*********************************************
        01 WS-JOB-TITLE PIC X(40) VALUE SPACES.
        01 WS-JOB-DESC  PIC X(200) VALUE SPACES.
        01 WS-JOB-EMPLOYER  PIC X(40) VALUE SPACES.
@@ -325,10 +277,7 @@
        01 WS-JOBS-EOF PIC X VALUE "N".
           88 JOBS-EOF-YES VALUE "Y".
           88 JOBS-EOF-NO VALUE "N".
-      *> JOB browsing related variables
-       *>*********************************************
-      *> JOB BROWSE (IN-MEMORY LIST) VARIABLES      *
-      *>*********************************************
+
        01 WS-JOB-CNT            PIC 999 VALUE 0.
        01 WS-JOB-ID             PIC 999 VALUE 0.
        01 WS-JOB-SELECT         PIC 9(5) VALUE 0.
@@ -341,6 +290,56 @@
        01 WS-JOB-PARSE-LOC      PIC X(40).
        01 WS-JOB-PARSE-SAL      PIC X(40).
 
+      *>*********************************************
+      *> MESSAGING VARIABLES (WEEK 8)               *
+      *>*********************************************
+       01 WS-MSG-RECIPIENT      PIC X(20) VALUE SPACES.
+       01 WS-MSG-CONTENT        PIC X(200) VALUE SPACES.
+       01 WS-MSG-LINE           PIC X(512) VALUE SPACES.
+
+       *> FUNCTION CURRENT-DATE returns 21 chars: YYYYMMDDHHMMSSCC+HHMM
+       01 WS-MSG-TIMESTAMP-RAW  PIC X(21).
+       01 FILLER REDEFINES WS-MSG-TIMESTAMP-RAW.
+           05 WS-MSG-TS-YEAR    PIC X(4).
+           05 WS-MSG-TS-MONTH   PIC X(2).
+           05 WS-MSG-TS-DAY     PIC X(2).
+           05 WS-MSG-TS-HOUR    PIC X(2).
+           05 WS-MSG-TS-MIN     PIC X(2).
+           05 WS-MSG-TS-SEC     PIC X(2).
+           05 FILLER            PIC X(7).
+       01 WS-MSG-TIMESTAMP      PIC X(20) VALUE SPACES.
+
+       *> Recipient validation flags
+       01 WS-MSG-RECIP-FLAG     PIC X VALUE "N".
+          88 MSG-RECIP-FOUND    VALUE "Y".
+          88 MSG-RECIP-NOT-FOUND VALUE "N".
+
+       *> Connection validation flags
+       01 WS-MSG-CONN-FLAG      PIC X VALUE "N".
+          88 MSG-IS-CONNECTED   VALUE "Y".
+          88 MSG-NOT-CONNECTED  VALUE "N".
+
+       *> View-messages EOF flag
+       01 WS-MSG-VIEW-EOF       PIC X VALUE "N".
+          88 MSG-VIEW-EOF-YES   VALUE "Y".
+          88 MSG-VIEW-EOF-NO    VALUE "N".
+
+       *> Message count for VIEW-MY-MESSAGES
+       01 WS-MSG-COUNT-NUM      PIC 99 VALUE 0.
+       01 WS-MSG-COUNT-DISP     PIC Z9.
+
+       *> Parsed fields from a single message record
+       01 WS-MSG-PARSE-SENDER   PIC X(20).
+       01 WS-MSG-PARSE-RECIP    PIC X(20).
+       01 WS-MSG-PARSE-TS       PIC X(20).
+       01 WS-MSG-PARSE-BODY     PIC X(200).
+
+       *> Local exit flag for MESSAGES-MENU only.
+       *> Using a separate flag prevents "Back" from
+       *> triggering the top-level program exit.
+       01 WS-MSG-MENU-EXIT      PIC X VALUE "N".
+          88 MSG-MENU-EXIT-YES  VALUE "Y".
+          88 MSG-MENU-EXIT-NO   VALUE "N".
 
 
        PROCEDURE DIVISION.
@@ -358,68 +357,59 @@
            PERFORM CLOSE-FILES
            STOP RUN.
 
-      *> File Input-Output and input buffering
-
        INIT-FILES.
            OPEN INPUT IN-FILE
            IF WS-IN-STAT NOT = "00"
-                   DISPLAY 
-                   "Cannot open InCollege-Input.txt. Status=" 
+               DISPLAY "Cannot open InCollege-Input.txt. Status="
                    WS-IN-STAT
                STOP RUN
            END-IF
 
            OPEN OUTPUT OUT-FILE
            IF WS-OUT-STAT NOT = "00"
-                   DISPLAY 
-                   "Cannot create InCollege-Output.txt. Status=" 
+               DISPLAY "Cannot create InCollege-Output.txt. Status="
                    WS-OUT-STAT
                STOP RUN
            END-IF
            
-     *> open the acct file for reading (LINE SEQUENTIAL doesn't support I-O)
-     *> if code is 00 or "success" continue    
            OPEN INPUT ACCT-FILE
                IF WS-ACCT-STAT = "00"
                   CONTINUE
                ELSE
-     *> else, we create the file if file is not found or missing
                   IF WS-ACCT-STAT = "05" OR WS-ACCT-STAT = "35"
                      CLOSE ACCT-FILE
                      OPEN OUTPUT ACCT-FILE
-     *>if file is not successfully created or found, stop program with error
                      IF WS-ACCT-STAT NOT = "00" AND WS-ACCT-STAT NOT = "05"
-                        DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                        DISPLAY "Cannot create accounts.dat. Status = "
+                            WS-ACCT-STAT
                         STOP RUN
                      END-IF
-                     CLOSE  ACCT-FILE
+                     CLOSE ACCT-FILE
                      OPEN INPUT ACCT-FILE
                      IF WS-ACCT-STAT NOT = "00"
-                        DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
+                        DISPLAY "Cannot create accounts.dat. Status = "
+                            WS-ACCT-STAT
                         STOP RUN
                      END-IF
                   ELSE
-                        DISPLAY "Cannot create accounts.dat. Status = " WS-ACCT-STAT
-                        STOP RUN
+                     DISPLAY "Cannot create accounts.dat. Status = "
+                         WS-ACCT-STAT
+                     STOP RUN
                   END-IF
                END-IF
 
-           *> Initialize profiles.dat (create if doesn't exist)
            OPEN INPUT PROFILES-FILE
            IF PROFILES-STATUS = "00"
-               *> File exists, already open for input
                CLOSE PROFILES-FILE
            ELSE
-               *> File does not exist, create it
                OPEN OUTPUT PROFILES-FILE
                IF PROFILES-STATUS NOT = "00"
-                   DISPLAY "ERROR: Cannot create profiles.dat. Status=" 
+                   DISPLAY "ERROR: Cannot create profiles.dat. Status="
                        PROFILES-STATUS
                END-IF
                CLOSE PROFILES-FILE
            END-IF
 
-           *> Initialize jobs.dat (create if doesn't exist)
            OPEN INPUT JOBS-FILE
            IF WS-JOBS-STAT = "00"
                CLOSE JOBS-FILE
@@ -438,7 +428,6 @@
                END-IF
            END-IF.
 
-           *> Initialize applications.dat (create if doesn't exist)
            OPEN INPUT APPS-FILE
            IF WS-APPS-STAT = "00"
                CLOSE APPS-FILE
@@ -457,6 +446,25 @@
                END-IF
            END-IF.
 
+           *> Initialize messages.dat
+           OPEN INPUT MSGS-FILE
+           IF WS-MSGS-STAT = "00"
+               CLOSE MSGS-FILE
+           ELSE
+               IF WS-MSGS-STAT = "05" OR WS-MSGS-STAT = "35"
+                   OPEN OUTPUT MSGS-FILE
+                   IF WS-MSGS-STAT = "00" OR WS-MSGS-STAT = "05"
+                       CLOSE MSGS-FILE
+                   ELSE
+                       DISPLAY "ERROR: Cannot create messages.dat. Status="
+                           WS-MSGS-STAT
+                   END-IF
+               ELSE
+                   DISPLAY "ERROR: Cannot open messages.dat. Status="
+                       WS-MSGS-STAT
+               END-IF
+           END-IF.
+
        CLOSE-FILES.
            CLOSE IN-FILE
            CLOSE OUT-FILE
@@ -465,10 +473,9 @@
            CLOSE TEMP-PROFILES-FILE
            CLOSE CONN-FILE
            CLOSE JOBS-FILE
-           CLOSE APPS-FILE.
+           CLOSE APPS-FILE
+           CLOSE MSGS-FILE.
 
-      *> get next input from file, if at end, void input line
-      *> and set EOF flag yes flag to true
        GET-NEXT-INPUT.
            READ IN-FILE
                AT END
@@ -479,7 +486,6 @@
            END-READ.
 
        ECHO-INPUT.
-      *> echo user input line into outfile, EDITED TO ALLOW FOR INLINE INPUT
            MOVE SPACES TO WS-OUTLINE
            STRING
               FUNCTION TRIM(WS-PREV-PROMPT) DELIMITED BY SIZE
@@ -487,21 +493,20 @@
               FUNCTION TRIM(WS-INLINE) DELIMITED BY SIZE
               INTO WS-OUTLINE
            END-STRING
-     *>instead of printing the line, just write in echo input
            WRITE OUT-REC FROM WS-OUTLINE
            IF WS-OUT-STAT NOT = "00"
-              DISPLAY "ERR: failed writing to outfile. Status= " WS-OUT-STAT
+              DISPLAY "ERR: failed writing to outfile. Status= "
+                  WS-OUT-STAT
               STOP RUN
            END-IF.
 
        REQUIRE-INPUT.
            PERFORM GET-NEXT-INPUT
            IF EOF-YES
-                   SET EXIT-YES TO TRUE
-                   EXIT PARAGRAPH
+               SET EXIT-YES TO TRUE
+               EXIT PARAGRAPH
            END-IF
            DISPLAY FUNCTION TRIM(WS-INLINE)
-      *> newline for formatting
            DISPLAY SPACE
            PERFORM ECHO-INPUT.
 
@@ -514,26 +519,18 @@
            DISPLAY WS-OUTLINE
            WRITE OUT-REC FROM WS-OUTLINE
            IF WS-OUT-STAT NOT = "00"
-                   DISPLAY "ERR: Failed writing to output file. Status=" 
+               DISPLAY "ERR: Failed writing to output file. Status="
                    WS-OUT-STAT
                STOP RUN
            END-IF.
 
-      *> menu for user interaction
-
        TOP-LEVEL-MENU.
            MOVE "Welcome to InCollege!" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            MOVE "1. Log In" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            MOVE "2. Create New Account" TO WS-OUTLINE
            PERFORM PRINT-LINE
-       *> removed to match specs of project   
-       *>    MOVE "3. Logout" TO WS-OUTLINE
-       *>    PERFORM PRINT-LINE
-
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
 
@@ -543,7 +540,6 @@
            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
 
-      *> Support both number and text input
            EVALUATE TRUE
                WHEN WS-TRIMMED = "1"
                  OR WS-TRIMMED = "Log In"
@@ -551,25 +547,20 @@
                  OR WS-TRIMMED = "login"
                  OR WS-TRIMMED = "LOG IN"
                    PERFORM AUTHENTICATE-USER
-
                WHEN WS-TRIMMED = "2"
                  OR WS-TRIMMED = "Create New Account"
                  OR WS-TRIMMED = "CreateNewAccount"
                  OR WS-TRIMMED = "create"
                    PERFORM CREATE-NEW-ACCOUNT
-
                WHEN WS-TRIMMED = "3"
                  OR WS-TRIMMED = "Logout"
                  OR WS-TRIMMED = "logout"
                    SET EXIT-YES TO TRUE
-
                WHEN OTHER
                    MOVE "Invalid choice." TO WS-OUTLINE
                    PERFORM PRINT-LINE
            END-EVALUATE.
 
-      *> account persistence
-      *> MODIFIED THIS TO USE ACCT-EOF* instead of just EOF* and clearing account # memory
        LOAD-ACCOUNTS-FROM-FILE.
            MOVE 0 TO WS-ACCOUNT-COUNT
            MOVE SPACES TO WS-ACCOUNTS
@@ -589,43 +580,33 @@
                        PERFORM PARSE-ACCOUNT-LINE
                END-READ
            END-PERFORM
-
-      *> Reset EOF for normal input reading
            SET ACCT-EOF-NO TO TRUE.
 
        PARSE-ACCOUNT-LINE.
            IF WS-ACCOUNT-COUNT >= 5
                EXIT PARAGRAPH
            END-IF
-
            MOVE SPACES TO WS-TMP-USER
            MOVE SPACES TO WS-TMP-PASS
-
            UNSTRING WS-ACCT-LINE
                DELIMITED BY "|"
                INTO WS-TMP-USER WS-TMP-PASS
            END-UNSTRING
-
            IF FUNCTION TRIM(WS-TMP-USER) = SPACES
                EXIT PARAGRAPH
            END-IF
-
            ADD 1 TO WS-ACCOUNT-COUNT
-           MOVE FUNCTION TRIM(WS-TMP-USER) 
-           TO WS-USERNAME(WS-ACCOUNT-COUNT)
-           MOVE FUNCTION TRIM(WS-TMP-PASS) 
-           TO WS-PASSWORD(WS-ACCOUNT-COUNT).
+           MOVE FUNCTION TRIM(WS-TMP-USER) TO WS-USERNAME(WS-ACCOUNT-COUNT)
+           MOVE FUNCTION TRIM(WS-TMP-PASS) TO WS-PASSWORD(WS-ACCOUNT-COUNT).
 
        SAVE-ACCOUNTS-TO-FILE.
            CLOSE ACCT-FILE
            OPEN OUTPUT ACCT-FILE
            IF WS-ACCT-STAT NOT = "00"
-                   MOVE "ERR: Cannot write accounts.dat. Status=" 
-                   TO WS-OUTLINE
+               MOVE "ERR: Cannot write accounts.dat. Status=" TO WS-OUTLINE
                PERFORM PRINT-LINE
                STOP RUN
            END-IF
-
            PERFORM VARYING WS-I FROM 1 BY 1
                UNTIL WS-I > WS-ACCOUNT-COUNT
                MOVE SPACES TO WS-ACCT-LINE
@@ -637,56 +618,45 @@
                END-STRING
                WRITE ACCT-REC FROM WS-ACCT-LINE
            END-PERFORM
-
            CLOSE ACCT-FILE
            OPEN INPUT ACCT-FILE.
 
-      *> account creation procedures
        CREATE-NEW-ACCOUNT.
            IF WS-ACCOUNT-COUNT >= 5
-                   MOVE 
-                   "All permitted accounts have been created, please come back later"
+               MOVE "All permitted accounts have been created, please come back later"
                    TO WS-OUTLINE
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-           
            MOVE "Please enter your username:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
-            IF EXIT-YES OR EOF-YES
-              EXIT PARAGRAPH
-            END-IF
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-CURRENT-USERNAME
-
            PERFORM CHECK-USERNAME-EXISTS
            IF USERNAME-FOUND
-                   MOVE 
-                   "Username already exists. Please choose a different username."
+               MOVE "Username already exists. Please choose a different username."
                    TO WS-OUTLINE
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-
            MOVE "Please enter your password:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
-            IF EXIT-YES OR EOF-YES
-              EXIT PARAGRAPH
-            END-IF
+           IF EXIT-YES OR EOF-YES
+               EXIT PARAGRAPH
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-INPUT-PASSWORD
-
            PERFORM VALIDATE-PASSWORD
            IF PASSWORD-INVALID
                EXIT PARAGRAPH
            END-IF
-
            ADD 1 TO WS-ACCOUNT-COUNT
            MOVE WS-CURRENT-USERNAME TO WS-USERNAME(WS-ACCOUNT-COUNT)
            MOVE WS-CURRENT-PASSWORD TO WS-PASSWORD(WS-ACCOUNT-COUNT)
-
            PERFORM SAVE-ACCOUNTS-TO-FILE
-
            MOVE "Account created successfully!" TO WS-OUTLINE
            PERFORM PRINT-LINE.
 
@@ -705,74 +675,57 @@
            MOVE "N" TO WS-HAS-DIGIT
            MOVE "N" TO WS-HAS-SPECIAL
            SET PASSWORD-INVALID TO TRUE
-
-           *> Calculate actual password length using STORED-CHAR-LENGTH
-           COMPUTE WS-PASS-LEN = 
+           COMPUTE WS-PASS-LEN =
                FUNCTION STORED-CHAR-LENGTH(WS-INPUT-PASSWORD)
-
            IF WS-PASS-LEN < 8 OR WS-PASS-LEN > 12
-                   MOVE "Password must be between 8 and 12 characters." 
+               MOVE "Password must be between 8 and 12 characters."
                    TO WS-OUTLINE
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-
            PERFORM VARYING WS-CHAR-IDX FROM 1 BY 1
                UNTIL WS-CHAR-IDX > WS-PASS-LEN
                MOVE WS-INPUT-PASSWORD(WS-CHAR-IDX:1) TO WS-CHAR
-
                IF WS-CHAR >= "A" AND WS-CHAR <= "Z"
                    MOVE "Y" TO WS-HAS-UPPER
                END-IF
-
                IF WS-CHAR >= "0" AND WS-CHAR <= "9"
                    MOVE "Y" TO WS-HAS-DIGIT
                END-IF
-
                IF (WS-CHAR < "0" OR WS-CHAR > "9") AND
                   (WS-CHAR < "A" OR WS-CHAR > "Z") AND
                   (WS-CHAR < "a" OR WS-CHAR > "z")
                    MOVE "Y" TO WS-HAS-SPECIAL
                END-IF
            END-PERFORM
-
            IF WS-HAS-UPPER = "N"
-                   MOVE 
-                   "Password must contain at least one capital letter." 
+               MOVE "Password must contain at least one capital letter."
                    TO WS-OUTLINE
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-
            IF WS-HAS-DIGIT = "N"
-                   MOVE "Password must contain at least one digit." 
+               MOVE "Password must contain at least one digit."
                    TO WS-OUTLINE
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-
            IF WS-HAS-SPECIAL = "N"
-                   MOVE 
-                   "Password must contain at least a special character" 
+               MOVE "Password must contain at least a special character"
                    TO WS-OUTLINE
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-
            MOVE WS-INPUT-PASSWORD TO WS-CURRENT-PASSWORD
            SET PASSWORD-VALID TO TRUE.
 
-      *> user authentication with unlimited attempts
-
        AUTHENTICATE-USER.
            IF WS-ACCOUNT-COUNT = 0
-                   MOVE 
-                   "Incorrect username/password, please try again" 
+               MOVE "Incorrect username/password, please try again"
                    TO WS-OUTLINE
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-
            PERFORM UNTIL USERNAME-FOUND
                MOVE "Please enter your username:" TO WS-OUTLINE
                PERFORM PRINT-INLINE
@@ -781,7 +734,6 @@
                   EXIT PARAGRAPH
                END-IF
                MOVE FUNCTION TRIM(WS-INLINE) TO WS-CURRENT-USERNAME
-
                MOVE "Please enter your password:" TO WS-OUTLINE
                PERFORM PRINT-INLINE
                PERFORM REQUIRE-INPUT
@@ -789,22 +741,17 @@
                   EXIT PARAGRAPH
                END-IF
                MOVE FUNCTION TRIM(WS-INLINE) TO WS-CURRENT-PASSWORD
-
                PERFORM CHECK-CREDENTIALS
-
                IF USERNAME-FOUND
                    MOVE "You have successfully logged in." TO WS-OUTLINE
                    PERFORM PRINT-LINE
                    PERFORM AFTER-LOGIN
                ELSE
-                       MOVE 
-                       "Incorrect username/password, please try again" 
+                   MOVE "Incorrect username/password, please try again"
                        TO WS-OUTLINE
                    PERFORM PRINT-LINE
                END-IF
            END-PERFORM
-
-      *> reset found flag for future operations
            SET USERNAME-NOT-FOUND TO TRUE.
            
        CHECK-CREDENTIALS.
@@ -820,18 +767,13 @@
                END-IF
            END-PERFORM.
 
-      *> core profile setup with menus and updated account persistence info
        CORE-PROFILE-ROUTINE.
-           
-           *> Clear existing profile data to start fresh when editing
            MOVE SPACES TO WS-P-FNAME
            MOVE SPACES TO WS-P-LNAME
            MOVE SPACES TO WS-P-UNIVERSITY
            MOVE SPACES TO WS-P-MAJOR
            MOVE SPACES TO WS-P-GRAD-YEAR
            MOVE SPACES TO WS-P-ABOUT
-           
-           *> Clear all work experience entries
            MOVE 1 TO WS-I
            PERFORM UNTIL WS-I > 3
                MOVE SPACES TO WS-WORK-TITLE(WS-I)
@@ -840,8 +782,6 @@
                MOVE SPACES TO WS-WORK-DESC(WS-I)
                ADD 1 TO WS-I
            END-PERFORM
-           
-           *> Clear all education entries
            MOVE 1 TO WS-I
            PERFORM UNTIL WS-I > 3
                MOVE SPACES TO WS-EDU-DEGREE(WS-I)
@@ -849,8 +789,6 @@
                MOVE SPACES TO WS-EDU-YEAR(WS-I)
                ADD 1 TO WS-I
            END-PERFORM
-
-      *>   PERFORM LOAD-PROFILE
            MOVE "--- Create/Edit Profile ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Enter First Name: " TO WS-OUTLINE
@@ -858,35 +796,33 @@
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
-            END-IF
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-P-FNAME
-
            MOVE "Enter Last Name: " TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
-            END-IF
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-P-LNAME
-
            MOVE "Enter University/College Attended: " TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
-            END-IF
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-P-UNIVERSITY
-           
            MOVE "Enter Major: " TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
-            END-IF
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-P-MAJOR
-           
-           PERFORM WITH TEST AFTER UNTIL (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4) 
-           AND FUNCTION TRIM(WS-P-GRAD-YEAR) IS NUMERIC
+           PERFORM WITH TEST AFTER UNTIL
+               (FUNCTION STORED-CHAR-LENGTH(
+                FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4)
+               AND FUNCTION TRIM(WS-P-GRAD-YEAR) IS NUMERIC
               MOVE "Enter Graduation Year (YYYY): " TO WS-OUTLINE
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
@@ -894,165 +830,127 @@
                   EXIT PARAGRAPH
               END-IF
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-P-GRAD-YEAR
-              IF NOT (FUNCTION STORED-CHAR-LENGTH(FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4)
+              IF NOT (FUNCTION STORED-CHAR-LENGTH(
+                      FUNCTION TRIM(WS-P-GRAD-YEAR)) = 4)
               OR NOT (FUNCTION TRIM(WS-P-GRAD-YEAR) IS NUMERIC)
                  MOVE "Invalid year." TO WS-OUTLINE
                  PERFORM PRINT-LINE
                  MOVE SPACES TO WS-P-GRAD-YEAR
               END-IF
-            END-PERFORM.
-       
-           MOVE "About Me (optional, max 200 chars, Enter blank line to skip): " 
-           TO WS-OUTLINE
+           END-PERFORM.
+           MOVE "About Me (optional, max 200 chars, Enter blank line to skip): "
+               TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-P-ABOUT
-
            MOVE 1 TO WS-I
-
            PERFORM UNTIL WS-I > 3
-              MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):" 
-              TO WS-OUTLINE
+              MOVE "Experience (optional, max 3 entries. Enter 'DONE' to finish):"
+                  TO WS-OUTLINE
               PERFORM PRINT-INLINE
               DISPLAY SPACE
               MOVE SPACES TO WS-OUTLINE
-              STRING 
-              "Experience #" DELIMITED BY SIZE 
-              WS-I DELIMITED BY SIZE 
-              " - Title: " DELIMITED BY SIZE
-              INTO WS-OUTLINE
+              STRING "Experience #" DELIMITED BY SIZE
+                     WS-I DELIMITED BY SIZE
+                     " - Title: " DELIMITED BY SIZE
+                     INTO WS-OUTLINE
               END-STRING
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
-          *> only check if user is "done" at beginning
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
               IF FUNCTION UPPER-CASE(WS-TRIMMED) = "DONE"
                  EXIT PERFORM
               END-IF
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-TITLE(WS-I)
-
               MOVE SPACES TO WS-OUTLINE
-              STRING 
-              "Experience #" DELIMITED BY SIZE 
-              WS-I DELIMITED BY SIZE 
-              " - Company/Organization: " DELIMITED BY SIZE
-              INTO WS-OUTLINE 
+              STRING "Experience #" DELIMITED BY SIZE
+                     WS-I DELIMITED BY SIZE
+                     " - Company/Organization: " DELIMITED BY SIZE
+                     INTO WS-OUTLINE
               END-STRING
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
-
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-EMPLOYER(WS-I)
- 
               MOVE SPACES TO WS-OUTLINE
-              STRING 
-              "Experience #" DELIMITED BY SIZE 
-              WS-I DELIMITED BY SIZE 
-              " - Dates (e.g., Summer 2024): " DELIMITED BY SIZE
-              INTO WS-OUTLINE
+              STRING "Experience #" DELIMITED BY SIZE
+                     WS-I DELIMITED BY SIZE
+                     " - Dates (e.g., Summer 2024): " DELIMITED BY SIZE
+                     INTO WS-OUTLINE
               END-STRING
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
-
               MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-WORK-DATES(WS-I)
-              
               MOVE SPACES TO WS-OUTLINE
-              STRING
-              "Experience #" DELIMITED BY SIZE 
-              WS-I DELIMITED BY SIZE 
-              " - Description  (optional, max 100 chars, blank to skip): " 
-              DELIMITED BY SIZE
-              INTO WS-OUTLINE
+              STRING "Experience #" DELIMITED BY SIZE
+                     WS-I DELIMITED BY SIZE
+                     " - Description (optional, max 100 chars, blank to skip): "
+                     DELIMITED BY SIZE
+                     INTO WS-OUTLINE
               END-STRING
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
-
               MOVE FUNCTION TRIM(WS-INLINE)(1:100) TO WS-WORK-DESC(WS-I)
               ADD 1 TO WS-I
            END-PERFORM.
-
            MOVE 1 TO WS-I
-
            PERFORM UNTIL WS-I > 3
-              MOVE "Add Education (optional, max 3 entries. Enter 'DONE' to finish):" 
-              TO WS-OUTLINE
+              MOVE "Add Education (optional, max 3 entries. Enter 'DONE' to finish):"
+                  TO WS-OUTLINE
               PERFORM PRINT-INLINE
               DISPLAY SPACE
               MOVE SPACES TO WS-OUTLINE
-              STRING 
-              "Education #" DELIMITED BY SIZE 
-              WS-I DELIMITED BY SIZE 
-              " - Degree: " DELIMITED BY SIZE
-              INTO WS-OUTLINE
+              STRING "Education #" DELIMITED BY SIZE
+                     WS-I DELIMITED BY SIZE
+                     " - Degree: " DELIMITED BY SIZE
+                     INTO WS-OUTLINE
               END-STRING
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
-
-          *> only check if user is "done" at beginning
               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
               IF FUNCTION UPPER-CASE(WS-TRIMMED) = "DONE"
                  EXIT PERFORM
               END-IF
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-EDU-DEGREE(WS-I)
-              
               MOVE SPACES TO WS-OUTLINE
-              STRING 
-              "Education #" DELIMITED BY SIZE 
-              WS-I DELIMITED BY SIZE 
-              " - University/College: " DELIMITED BY SIZE 
-              INTO WS-OUTLINE
+              STRING "Education #" DELIMITED BY SIZE
+                     WS-I DELIMITED BY SIZE
+                     " - University/College: " DELIMITED BY SIZE
+                     INTO WS-OUTLINE
               END-STRING
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
-
               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-EDU-SCHOOL(WS-I)
- 
               MOVE SPACES TO WS-OUTLINE
-              STRING 
-              "Education #" DELIMITED BY SIZE 
-              WS-I DELIMITED BY SIZE 
-              " - Years Attended (e.g., 2023-2025): " DELIMITED BY SIZE 
-              INTO WS-OUTLINE
+              STRING "Education #" DELIMITED BY SIZE
+                     WS-I DELIMITED BY SIZE
+                     " - Years Attended (e.g., 2023-2025): " DELIMITED BY SIZE
+                     INTO WS-OUTLINE
               END-STRING
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
-
               MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-EDU-YEAR(WS-I)
               ADD 1 TO WS-I
            END-PERFORM.
-
-           *> Save profile to persistent storage
            PERFORM SAVE-PROFILE
            MOVE "Profile saved successfully!" TO WS-OUTLINE
            PERFORM PRINT-LINE.
-       
-
-      *> what happens after login 
 
        AFTER-LOGIN.
-           *> Load user's profile from persistent storage
            PERFORM LOAD-PROFILE
-
            MOVE SPACES TO WS-OUTLINE
-           STRING
-           "Welcome, " DELIMITED BY SIZE 
-           FUNCTION TRIM(WS-CURRENT-USERNAME)
-           DELIMITED BY SIZE 
-           "!" DELIMITED BY SIZE
-           INTO WS-OUTLINE
+           STRING "Welcome, " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-CURRENT-USERNAME) DELIMITED BY SIZE
+                  "!" DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-
            PERFORM AFTER-LOGIN-MENU UNTIL EXIT-YES OR EOF-YES.
-           *> Clear profile data for security
            PERFORM CLEAR-PROFILE-DATA
-          *> line below resets EXIT-YES flag used by top-level menu and main
-          *> so that whole program does not end when log out is done at 
-          *> after log in menu
            IF EXIT-YES AND NOT EOF-YES
-               SET EXIT-NO TO true
+               SET EXIT-NO TO TRUE
            END-IF.
 
        AFTER-LOGIN-MENU.
@@ -1071,6 +969,8 @@
            MOVE "7. Go Back" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "8. Job Search/Internship" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "9. Messages" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
@@ -1099,15 +999,13 @@
                    EXIT PARAGRAPH
                WHEN "8"
                    PERFORM JOB-SEARCH-MENU
+               WHEN "9"
+                   PERFORM MESSAGES-MENU
                WHEN "Logout"
-                   SET EXIT-YES TO TRUE
                WHEN "log out"
-                   SET EXIT-YES TO TRUE
                WHEN "logout"
-                   SET EXIT-YES TO TRUE
                WHEN "Log out"
-                   SET EXIT-YES TO TRUE
-               WHEN "Log Out" 
+               WHEN "Log Out"
                    SET EXIT-YES TO TRUE
                WHEN OTHER
                    MOVE "Invalid choice." TO WS-OUTLINE
@@ -1131,60 +1029,36 @@
            PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
               EXIT PARAGRAPH
            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-            IF WS-TRIMMED = "Logout" 
-               OR WS-TRIMMED = "logout" OR
-               WS-TRIMMED = "log out" OR
-               WS-TRIMMED = "Log out" OR
-               WS-TRIMMED = "Log Out"
-                   SET EXIT-YES TO TRUE
-                   EXIT PARAGRAPH
+           IF WS-TRIMMED = "Logout" OR WS-TRIMMED = "logout"
+               OR WS-TRIMMED = "log out" OR WS-TRIMMED = "Log out"
+               OR WS-TRIMMED = "Log Out"
+               SET EXIT-YES TO TRUE
+               EXIT PARAGRAPH
            END-IF
-           IF WS-TRIMMED = "Go Back" OR WS-TRIMMED = "6" 
+           IF WS-TRIMMED = "Go Back" OR WS-TRIMMED = "6"
                    OR WS-TRIMMED = "back"
                EXIT PARAGRAPH
            END-IF
-
            MOVE "This skill is under construction." TO WS-OUTLINE
            PERFORM PRINT-LINE
-
-      *> show the skill menu again after user chooses
            PERFORM LEARN-A-SKILL.
-      
-      *>*********************************************
-      *> USER SEARCH FUNCTIONALITY                  *
-      *>*********************************************
 
-      *>---------------------------------------------
-      *> FIND-USER                                   
-      *> Purpose: Search for another user by name    
-      *> Called: From AFTER-LOGIN-MENU option 2      
-      *>---------------------------------------------
        FIND-USER.
-           *> Prompt for full name
-           MOVE "Enter the full name of the person you are looking for:" 
+           MOVE "Enter the full name of the person you are looking for:"
                TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
-           
-           *> Store the search input
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-SEARCH-INPUT
-           
-           *> Parse the full name into first and last name
            PERFORM PARSE-SEARCH-NAME
-           
-           *> Search for the user in profiles.dat
            PERFORM SEARCH-FOR-USER
-           
-           *> Display results
            IF USER-SEARCH-FOUND
                PERFORM DISPLAY-FOUND-USER-PROFILE
            ELSE
@@ -1192,308 +1066,176 @@
                PERFORM PRINT-LINE
            END-IF.
 
-      *>---------------------------------------------
-      *> PARSE-SEARCH-NAME                           
-      *> Purpose: Split "John Doe" into first/last   
-      *> Called: By FIND-USER                        
-      *>---------------------------------------------
        PARSE-SEARCH-NAME.
            MOVE SPACES TO WS-SEARCH-FNAME
            MOVE SPACES TO WS-SEARCH-LNAME
-           
-           *> Use UNSTRING to split by space
            UNSTRING WS-SEARCH-INPUT
                DELIMITED BY " " OR "  "
-               INTO WS-SEARCH-FNAME
-                    WS-SEARCH-LNAME
+               INTO WS-SEARCH-FNAME WS-SEARCH-LNAME
            END-UNSTRING
-           
-           *> Build full name for comparison (FirstName LastName)
            MOVE SPACES TO WS-SEARCH-FULL-NAME
            STRING
-               FUNCTION TRIM(WS-SEARCH-FNAME)
-               DELIMITED BY SIZE
-               " "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-SEARCH-LNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-SEARCH-FNAME) DELIMITED BY SIZE
+               " " DELIMITED BY SIZE
+               FUNCTION TRIM(WS-SEARCH-LNAME) DELIMITED BY SIZE
                INTO WS-SEARCH-FULL-NAME
            END-STRING.
 
-      *>---------------------------------------------
-      *> SEARCH-FOR-USER                             
-      *> Purpose: Search profiles.dat for matching name
-      *> Called: By FIND-USER                        
-      *>---------------------------------------------
        SEARCH-FOR-USER.
-           *> Reset search flags
            SET USER-SEARCH-NOT-FOUND TO TRUE
            SET SEARCH-EOF-NO TO TRUE
-           
-           *> Open profiles file for reading
            OPEN INPUT PROFILES-FILE
-           
            IF PROFILES-STATUS = "00"
-               *> File exists, scan for matching user
                PERFORM READ-AND-COMPARE-PROFILE
                    UNTIL SEARCH-EOF-YES OR USER-SEARCH-FOUND
-               
                CLOSE PROFILES-FILE
            ELSE
-               *> No profiles exist yet
                SET USER-SEARCH-NOT-FOUND TO TRUE
            END-IF
-           
-           *> Reset EOF flag
            SET SEARCH-EOF-NO TO TRUE.
 
-      *>---------------------------------------------
-      *> READ-AND-COMPARE-PROFILE                    
-      *> Purpose: Read one profile and check if name matches
-      *> Called: By SEARCH-FOR-USER                  
-      *>---------------------------------------------
        READ-AND-COMPARE-PROFILE.
            READ PROFILES-FILE INTO WS-PROFILE-LINE
                AT END
                    SET SEARCH-EOF-YES TO TRUE
                NOT AT END
-       
                    MOVE SPACES TO WS-PARSED-FNAME
                    MOVE SPACES TO WS-PARSED-LNAME
-       
                    UNSTRING WS-PROFILE-LINE
                        DELIMITED BY "|"
-                       INTO
-                           WS-TMP-USER
-                           WS-PARSED-FNAME
-                           WS-PARSED-LNAME
+                       INTO WS-TMP-USER WS-PARSED-FNAME WS-PARSED-LNAME
                    END-UNSTRING
-       
                    MOVE SPACES TO WS-CURRENT-FULL-NAME
                    STRING
-                       FUNCTION TRIM(WS-PARSED-FNAME)
-                       DELIMITED BY SIZE
-                       " "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-PARSED-LNAME)
-                       DELIMITED BY SIZE
+                       FUNCTION TRIM(WS-PARSED-FNAME) DELIMITED BY SIZE
+                       " " DELIMITED BY SIZE
+                       FUNCTION TRIM(WS-PARSED-LNAME) DELIMITED BY SIZE
                        INTO WS-CURRENT-FULL-NAME
                    END-STRING
-       
                    IF FUNCTION UPPER-CASE(
                       FUNCTION TRIM(WS-CURRENT-FULL-NAME)) =
                       FUNCTION UPPER-CASE(
                       FUNCTION TRIM(WS-SEARCH-FULL-NAME))
                        SET USER-SEARCH-FOUND TO TRUE
-                       *> Parse the full profile data for display
                        PERFORM PARSE-PROFILE-LINE
                    END-IF
            END-READ.
-       
 
-      *>---------------------------------------------
-      *> DISPLAY-FOUND-USER-PROFILE                  
-      *> Purpose: Display the found user's complete profile
-      *> Called: By FIND-USER when match is found    
-      *> MODIFIED: Added menu for connection request
-      *>---------------------------------------------
        DISPLAY-FOUND-USER-PROFILE.
-           *> Display header
            MOVE "--- Found User Profile ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
-           *> Display name
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "Name: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-PARSED-FNAME)
-               DELIMITED BY SIZE
-               " "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-PARSED-LNAME)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "Name: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-PARSED-FNAME) DELIMITED BY SIZE
+                  " " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-PARSED-LNAME) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-
-           *> Display university
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "University: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-PARSED-UNIVERSITY)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "University: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-PARSED-UNIVERSITY) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-
-           *> Display major
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "Major: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-PARSED-MAJOR)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "Major: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-PARSED-MAJOR) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-
-           *> Display graduation year
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "Graduation Year: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-PARSED-GRAD-YEAR)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "Graduation Year: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-PARSED-GRAD-YEAR) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-
-           *> Display about me section
            IF WS-PARSED-ABOUT NOT = SPACES
                MOVE SPACES TO WS-OUTLINE
-               STRING
-                   "About Me: "
-                   DELIMITED BY SIZE
-                   FUNCTION TRIM(WS-PARSED-ABOUT)
-                   DELIMITED BY SIZE
-                   INTO WS-OUTLINE
+               STRING "About Me: " DELIMITED BY SIZE
+                      FUNCTION TRIM(WS-PARSED-ABOUT) DELIMITED BY SIZE
+                      INTO WS-OUTLINE
                END-STRING
                PERFORM PRINT-LINE
            END-IF
-
-           *> Display work experience section
            MOVE SPACES TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Experience:" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
-           *> Loop through work experiences
            MOVE 1 TO WS-I
            PERFORM UNTIL WS-I > 3
                IF WS-PARSED-WORK-TITLE(WS-I) NOT = SPACES
-                   *> Display title
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Title: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-PARSED-WORK-TITLE(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Title: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-PARSED-WORK-TITLE(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-
-                   *> Display company
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Company: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-PARSED-WORK-EMPLOYER(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Company: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-PARSED-WORK-EMPLOYER(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-
-                   *> Display dates
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Dates: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-PARSED-WORK-DATES(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Dates: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-PARSED-WORK-DATES(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-
-                   *> Display description if exists
                    IF WS-PARSED-WORK-DESC(WS-I) NOT = SPACES
                        MOVE SPACES TO WS-OUTLINE
-                       STRING
-                           " Description: "
-                           DELIMITED BY SIZE
-                           FUNCTION TRIM(WS-PARSED-WORK-DESC(WS-I))
-                           DELIMITED BY SIZE
-                           INTO WS-OUTLINE
+                       STRING " Description: " DELIMITED BY SIZE
+                              FUNCTION TRIM(WS-PARSED-WORK-DESC(WS-I))
+                              DELIMITED BY SIZE INTO WS-OUTLINE
                        END-STRING
                        PERFORM PRINT-LINE
                    END-IF
                END-IF
                ADD 1 TO WS-I
            END-PERFORM
-
-           *> If no work experience
            IF WS-PARSED-WORK-TITLE(1) = SPACES
                MOVE " None" TO WS-OUTLINE
                PERFORM PRINT-LINE
            END-IF
-
-           *> Display education section
            MOVE SPACES TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Education:" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
-           *> Loop through education entries
            MOVE 1 TO WS-I
            PERFORM UNTIL WS-I > 3
                IF WS-PARSED-EDU-DEGREE(WS-I) NOT = SPACES
-                   *> Display degree
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Degree: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-PARSED-EDU-DEGREE(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Degree: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-PARSED-EDU-DEGREE(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-
-                   *> Display university
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " University: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-PARSED-EDU-SCHOOL(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " University: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-PARSED-EDU-SCHOOL(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-
-                   *> Display years
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Years: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-PARSED-EDU-YEAR(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Years: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-PARSED-EDU-YEAR(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
                END-IF
                ADD 1 TO WS-I
            END-PERFORM
-
-           *> If no education
            IF WS-PARSED-EDU-DEGREE(1) = SPACES
                MOVE " None" TO WS-OUTLINE
                PERFORM PRINT-LINE
            END-IF
-
-           *> Display footer
            MOVE SPACES TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "-------------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           
-           *> NEW: Display menu for connection request
            PERFORM PROFILE-ACTION-MENU.
-       
-      *>---------------------------------------------
-      *> PROFILE-ACTION-MENU                         
-      *> Purpose: Menu after viewing a user profile  
-      *> Allows sending connection request           
-      *>---------------------------------------------
+
        PROFILE-ACTION-MENU.
            MOVE "1. Send Connection Request" TO WS-OUTLINE
            PERFORM PRINT-LINE
@@ -1501,13 +1243,11 @@
            PERFORM PRINT-LINE
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
-           
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-           
            EVALUATE WS-TRIMMED
                WHEN "1"
                    PERFORM SEND-CONNECTION-REQUEST
@@ -1518,36 +1258,20 @@
                    PERFORM PRINT-LINE
            END-EVALUATE.
 
-      *>*********************************************
-      *> PROFILE PERSISTENCE ROUTINES               *
-      *>*********************************************
-
-       *>---------------------------------------------
-       *> LOAD-PROFILE                                
-       *> Purpose: Load profile for logged-in user    
-       *> Called: After successful login              
-       *>---------------------------------------------
        LOAD-PROFILE.
-           *> Reset profile found flag
            SET PROFILE-NOT-FOUND TO TRUE
            SET PROFILE-EOF-NO TO TRUE
-       
-           *> Open profiles.dat for reading
            OPEN INPUT PROFILES-FILE
            IF PROFILES-STATUS = "00"
-               *> File exists, scan for user's profile
                PERFORM READ-PROFILE-FILE
                    UNTIL PROFILE-EOF-YES OR PROFILE-EXISTS
-               
                IF PROFILE-EXISTS
-                   *> Copy parsed data into WS-PROFILE variables
                    MOVE WS-PARSED-FNAME TO WS-P-FNAME
                    MOVE WS-PARSED-LNAME TO WS-P-LNAME
                    MOVE WS-PARSED-MAJOR TO WS-P-MAJOR
                    MOVE WS-PARSED-UNIVERSITY TO WS-P-UNIVERSITY
                    MOVE WS-PARSED-GRAD-YEAR TO WS-P-GRAD-YEAR
                    MOVE WS-PARSED-ABOUT TO WS-P-ABOUT
-                   *> Copy work experience entries
                    MOVE WS-PARSED-WORK-TITLE(1) TO WS-WORK-TITLE(1)
                    MOVE WS-PARSED-WORK-EMPLOYER(1) TO WS-WORK-EMPLOYER(1)
                    MOVE WS-PARSED-WORK-DATES(1) TO WS-WORK-DATES(1)
@@ -1560,8 +1284,6 @@
                    MOVE WS-PARSED-WORK-EMPLOYER(3) TO WS-WORK-EMPLOYER(3)
                    MOVE WS-PARSED-WORK-DATES(3) TO WS-WORK-DATES(3)
                    MOVE WS-PARSED-WORK-DESC(3) TO WS-WORK-DESC(3)
-                   
-                   *> Copy education entries
                    MOVE WS-PARSED-EDU-DEGREE(1) TO WS-EDU-DEGREE(1)
                    MOVE WS-PARSED-EDU-SCHOOL(1) TO WS-EDU-SCHOOL(1)
                    MOVE WS-PARSED-EDU-YEAR(1) TO WS-EDU-YEAR(1)
@@ -1572,581 +1294,344 @@
                    MOVE WS-PARSED-EDU-SCHOOL(3) TO WS-EDU-SCHOOL(3)
                    MOVE WS-PARSED-EDU-YEAR(3) TO WS-EDU-YEAR(3)
                END-IF
-               
                CLOSE PROFILES-FILE
            ELSE
-               *> File does not exist yet (first user), this is normal
                CONTINUE
            END-IF
-           
-           *> Reset EOF flag for next operation
            SET PROFILE-EOF-NO TO TRUE.
        
-       *>---------------------------------------------
-       *> READ-PROFILE-FILE                           
-       *> Purpose: Read and parse one profile line    
-       *> Called: By LOAD-PROFILE                     
-       *>---------------------------------------------
        READ-PROFILE-FILE.
            READ PROFILES-FILE INTO WS-PROFILE-LINE
                AT END
                    SET PROFILE-EOF-YES TO TRUE
                NOT AT END
-                   *> Parse the line and check if username matches
                    PERFORM PARSE-PROFILE-LINE
                    IF WS-PARSED-USERNAME = WS-CURRENT-USERNAME
                        SET PROFILE-EXISTS TO TRUE
                    END-IF
            END-READ.
        
-       *>---------------------------------------------
-       *> PARSE-PROFILE-LINE                          
-       *> Purpose: Parse pipe-delimited profile data  
-       *> Format: username|fname|lname|uni|major|year|about|work1-4fields|work2-4fields|work3-4fields|edu1-3fields|edu2-3fields|edu3-3fields (28 fields total)
-       *>---------------------------------------------
        PARSE-PROFILE-LINE.
-           *> Clear parsed fields first
            MOVE SPACES TO WS-PARSED-PROFILE
-           
-           *> Use UNSTRING to split by pipe delimiter
            UNSTRING WS-PROFILE-LINE
                DELIMITED BY "|"
                INTO
-                   WS-PARSED-USERNAME
-                   WS-PARSED-FNAME
-                   WS-PARSED-LNAME
-                   WS-PARSED-UNIVERSITY
-                   WS-PARSED-MAJOR
-                   WS-PARSED-GRAD-YEAR
+                   WS-PARSED-USERNAME  WS-PARSED-FNAME
+                   WS-PARSED-LNAME     WS-PARSED-UNIVERSITY
+                   WS-PARSED-MAJOR     WS-PARSED-GRAD-YEAR
                    WS-PARSED-ABOUT
-                   WS-PARSED-WORK-TITLE(1)
-                   WS-PARSED-WORK-EMPLOYER(1)
-                   WS-PARSED-WORK-DATES(1)
-                   WS-PARSED-WORK-DESC(1)
-                   WS-PARSED-WORK-TITLE(2)
-                   WS-PARSED-WORK-EMPLOYER(2)
-                   WS-PARSED-WORK-DATES(2)
-                   WS-PARSED-WORK-DESC(2)
-                   WS-PARSED-WORK-TITLE(3)
-                   WS-PARSED-WORK-EMPLOYER(3)
-                   WS-PARSED-WORK-DATES(3)
-                   WS-PARSED-WORK-DESC(3)
-                   WS-PARSED-EDU-DEGREE(1)
-                   WS-PARSED-EDU-SCHOOL(1)
+                   WS-PARSED-WORK-TITLE(1)  WS-PARSED-WORK-EMPLOYER(1)
+                   WS-PARSED-WORK-DATES(1)  WS-PARSED-WORK-DESC(1)
+                   WS-PARSED-WORK-TITLE(2)  WS-PARSED-WORK-EMPLOYER(2)
+                   WS-PARSED-WORK-DATES(2)  WS-PARSED-WORK-DESC(2)
+                   WS-PARSED-WORK-TITLE(3)  WS-PARSED-WORK-EMPLOYER(3)
+                   WS-PARSED-WORK-DATES(3)  WS-PARSED-WORK-DESC(3)
+                   WS-PARSED-EDU-DEGREE(1)  WS-PARSED-EDU-SCHOOL(1)
                    WS-PARSED-EDU-YEAR(1)
-                   WS-PARSED-EDU-DEGREE(2)
-                   WS-PARSED-EDU-SCHOOL(2)
+                   WS-PARSED-EDU-DEGREE(2)  WS-PARSED-EDU-SCHOOL(2)
                    WS-PARSED-EDU-YEAR(2)
-                   WS-PARSED-EDU-DEGREE(3)
-                   WS-PARSED-EDU-SCHOOL(3)
+                   WS-PARSED-EDU-DEGREE(3)  WS-PARSED-EDU-SCHOOL(3)
                    WS-PARSED-EDU-YEAR(3)
            END-UNSTRING.
        
-       *>---------------------------------------------
-       *> SAVE-PROFILE                                
-       *> Purpose: Persist current user's profile     
-       *> Called: After profile editing complete      
-       *> Strategy: Rewrite entire file               
-       *>---------------------------------------------
        SAVE-PROFILE.
-           *> Reset flags
            SET PROFILE-NOT-FOUND TO TRUE
            SET PROFILE-EOF-NO TO TRUE
-           
-           *> Close any open profile files first
            CLOSE PROFILES-FILE
            CLOSE TEMP-PROFILES-FILE
-           
-           *> Try to open existing profiles.dat
            OPEN INPUT PROFILES-FILE
-           
            IF PROFILES-STATUS = "00"
-               *> File exists - need to rewrite it
                CLOSE PROFILES-FILE
                PERFORM REWRITE-PROFILE-FILE
            ELSE
-               *> File does not exist - create it with first profile
                OPEN OUTPUT PROFILES-FILE
                IF PROFILES-STATUS = "00"
                    PERFORM WRITE-CURRENT-PROFILE-NEW
                    CLOSE PROFILES-FILE
                ELSE
-                   DISPLAY "ERROR: Cannot create profiles.dat. Status=" 
+                   DISPLAY "ERROR: Cannot create profiles.dat. Status="
                        PROFILES-STATUS
                END-IF
            END-IF
-           
-           *> Reset EOF flag
            SET PROFILE-EOF-NO TO TRUE.
        
-       *>---------------------------------------------
-       *> REWRITE-PROFILE-FILE                        
-       *> Purpose: Update existing profiles.dat       
-       *> Strategy: Copy all profiles to temp file    
-       *>           Update or append current user     
-       *>           Replace original with temp         
-       *>---------------------------------------------
        REWRITE-PROFILE-FILE.
-           *> Re-open profiles file for reading
            OPEN INPUT PROFILES-FILE
            IF PROFILES-STATUS NOT = "00"
-               DISPLAY "ERROR: Cannot open profiles.dat for reading. Status=" 
+               DISPLAY "ERROR: Cannot open profiles.dat. Status="
                    PROFILES-STATUS
                EXIT PARAGRAPH
            END-IF
-           
-           *> Open temp file for output
            OPEN OUTPUT TEMP-PROFILES-FILE
            IF TEMP-PROFILES-STATUS NOT = "00"
-               DISPLAY "ERROR: Cannot create temp profile file. Status=" 
+               DISPLAY "ERROR: Cannot create temp profile file. Status="
                    TEMP-PROFILES-STATUS
                CLOSE PROFILES-FILE
                EXIT PARAGRAPH
            END-IF
-           
-           *> Read existing profiles and copy to temp
            PERFORM UNTIL PROFILE-EOF-YES
                READ PROFILES-FILE INTO WS-PROFILE-LINE
                    AT END
                        SET PROFILE-EOF-YES TO TRUE
                    NOT AT END
-                       *> Parse to check username
                        PERFORM PARSE-PROFILE-LINE
-                       
                        IF WS-PARSED-USERNAME = WS-CURRENT-USERNAME
-                           *> Found existing profile - replace it
                            SET PROFILE-EXISTS TO TRUE
                            PERFORM WRITE-CURRENT-PROFILE
                        ELSE
-                           *> Different user - copy their profile unchanged
                            WRITE TEMP-PROFILE-REC FROM WS-PROFILE-LINE
                        END-IF
                END-READ
            END-PERFORM
-           
-           *> If profile was not found, append it
            IF PROFILE-NOT-FOUND
                PERFORM WRITE-CURRENT-PROFILE
            END-IF
-           
            CLOSE TEMP-PROFILES-FILE
-           
-           *> Reset EOF for file operations
            SET PROFILE-EOF-NO TO TRUE
-           
-           *> Replace original file with temp file
            PERFORM REPLACE-PROFILE-FILE.
        
-       *>---------------------------------------------
-       *> WRITE-CURRENT-PROFILE-NEW                   
-       *> Purpose: Write profile to new file (OUTPUT mode)
-       *>---------------------------------------------
        WRITE-CURRENT-PROFILE-NEW.
            MOVE SPACES TO WS-PROFILE-LINE
-           
-           *> Build pipe-delimited string
            STRING
-               FUNCTION TRIM(WS-CURRENT-USERNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-CURRENT-USERNAME) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-FNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-FNAME) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-LNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-LNAME) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-UNIVERSITY)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-UNIVERSITY) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-MAJOR)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-MAJOR) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-GRAD-YEAR)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-GRAD-YEAR) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-ABOUT)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-ABOUT) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-TITLE(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-TITLE(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-EMPLOYER(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-EMPLOYER(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DATES(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DATES(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DESC(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DESC(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-TITLE(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-TITLE(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-EMPLOYER(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-EMPLOYER(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DATES(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DATES(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DESC(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DESC(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-TITLE(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-TITLE(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-EMPLOYER(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-EMPLOYER(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DATES(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DATES(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DESC(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DESC(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-DEGREE(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-DEGREE(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-SCHOOL(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-SCHOOL(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-YEAR(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-YEAR(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-DEGREE(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-DEGREE(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-SCHOOL(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-SCHOOL(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-YEAR(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-YEAR(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-DEGREE(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-DEGREE(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-SCHOOL(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-SCHOOL(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-YEAR(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-YEAR(3)) DELIMITED BY SIZE
                INTO WS-PROFILE-LINE
            END-STRING
-           
            WRITE PROFILE-REC FROM WS-PROFILE-LINE.
        
-       *>---------------------------------------------
-       *> WRITE-CURRENT-PROFILE                       
-       *> Purpose: Write profile to temp file (used during rewrite)
-       *>---------------------------------------------
        WRITE-CURRENT-PROFILE.
            MOVE SPACES TO WS-PROFILE-LINE
-           
-           *> Build pipe-delimited string
            STRING
-               FUNCTION TRIM(WS-CURRENT-USERNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-CURRENT-USERNAME) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-FNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-FNAME) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-LNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-LNAME) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-UNIVERSITY)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-UNIVERSITY) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-MAJOR)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-MAJOR) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-GRAD-YEAR)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-GRAD-YEAR) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-ABOUT)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-P-ABOUT) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-TITLE(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-TITLE(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-EMPLOYER(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-EMPLOYER(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DATES(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DATES(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DESC(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DESC(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-TITLE(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-TITLE(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-EMPLOYER(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-EMPLOYER(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DATES(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DATES(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DESC(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DESC(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-TITLE(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-TITLE(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-EMPLOYER(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-EMPLOYER(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DATES(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DATES(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-WORK-DESC(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-WORK-DESC(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-DEGREE(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-DEGREE(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-SCHOOL(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-SCHOOL(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-YEAR(1))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-YEAR(1)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-DEGREE(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-DEGREE(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-SCHOOL(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-SCHOOL(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-YEAR(2))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-YEAR(2)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-DEGREE(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-DEGREE(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-SCHOOL(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-SCHOOL(3)) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-EDU-YEAR(3))
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-EDU-YEAR(3)) DELIMITED BY SIZE
                INTO WS-PROFILE-LINE
            END-STRING
-           
-           *> Write to temp file (used during rewrite)
            WRITE TEMP-PROFILE-REC FROM WS-PROFILE-LINE.
        
-       *>---------------------------------------------
-       *> REPLACE-PROFILE-FILE                        
-       *> Purpose: Replace profiles.dat with temp file
-       *> Note: Uses system commands                  
-       *>---------------------------------------------
        REPLACE-PROFILE-FILE.
-           *> Delete old profiles.dat
            CALL "SYSTEM" USING "rm -f profiles.dat"
            END-CALL
-           
-           *> Rename temp file to profiles.dat
            CALL "SYSTEM" USING "mv temp-profiles.dat profiles.dat"
            END-CALL.
        
-       *>---------------------------------------------
-       *> CLEAR-PROFILE-DATA                          
-       *> Purpose: Clear profile from memory on logout
-       *> Security: Prevents data leakage             
-       *>---------------------------------------------
        CLEAR-PROFILE-DATA.
            MOVE SPACES TO WS-PROFILE.
        
-       *>---------------------------------------------
-       *> VIEW-PROFILE                                
-       *> Purpose: Display current user's profile     
-       *> Called: From AFTER-LOGIN-MENU option 1      
-       *>---------------------------------------------
        VIEW-PROFILE.
-           *> Display header
            MOVE "--- Your Profile ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
-       
-           *> Display name
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "Name: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-FNAME)
-               DELIMITED BY SIZE
-               " "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-LNAME)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "Name: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-P-FNAME) DELIMITED BY SIZE
+                  " " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-P-LNAME) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-       
-           *> Display university
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "University: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-UNIVERSITY)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "University: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-P-UNIVERSITY) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-       
-           *> Display major
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "Major: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-MAJOR)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "Major: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-P-MAJOR) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-       
-           *> Display graduation year
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "Graduation Year: "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-P-GRAD-YEAR)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "Graduation Year: " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-P-GRAD-YEAR) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-
-           *> Display about me
            IF WS-P-ABOUT NOT = SPACES
                MOVE SPACES TO WS-OUTLINE
-               STRING
-                   "About Me: "
-                   DELIMITED BY SIZE
-                   FUNCTION TRIM(WS-P-ABOUT)
-                   DELIMITED BY SIZE
-                   INTO WS-OUTLINE
+               STRING "About Me: " DELIMITED BY SIZE
+                      FUNCTION TRIM(WS-P-ABOUT) DELIMITED BY SIZE
+                      INTO WS-OUTLINE
                END-STRING
                PERFORM PRINT-LINE
            END-IF
-       
-           *> Display work experience section
            MOVE SPACES TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Experience:" TO WS-OUTLINE
            PERFORM PRINT-LINE
-       
-           *> Loop through work experiences
            MOVE 1 TO WS-I
            PERFORM UNTIL WS-I > 3
                IF WS-WORK-TITLE(WS-I) NOT = SPACES
-                   *> Display title
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Title: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-WORK-TITLE(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Title: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-WORK-TITLE(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-       
-                   *> Display company
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Company: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-WORK-EMPLOYER(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Company: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-WORK-EMPLOYER(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-       
-                   *> Display dates
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Dates: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-WORK-DATES(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Dates: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-WORK-DATES(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-       
-                   *> Display description if exists
                    IF WS-WORK-DESC(WS-I) NOT = SPACES
                        MOVE SPACES TO WS-OUTLINE
-                       STRING
-                           " Description: "
-                           DELIMITED BY SIZE
-                           FUNCTION TRIM(WS-WORK-DESC(WS-I))
-                           DELIMITED BY SIZE
-                           INTO WS-OUTLINE
+                       STRING " Description: " DELIMITED BY SIZE
+                              FUNCTION TRIM(WS-WORK-DESC(WS-I))
+                              DELIMITED BY SIZE INTO WS-OUTLINE
                        END-STRING
                        PERFORM PRINT-LINE
                    END-IF
-
-                   
                END-IF
                ADD 1 TO WS-I
            END-PERFORM
-       
-           *> If no work experience
            IF WS-WORK-TITLE(1) = SPACES
                MOVE " None" TO WS-OUTLINE
                PERFORM PRINT-LINE
-               
            END-IF
-
-           *> Display education section
            MOVE "Education:" TO WS-OUTLINE
            PERFORM PRINT-LINE
-       
-           *> Loop through education entries
            MOVE 1 TO WS-I
            PERFORM UNTIL WS-I > 3
                IF WS-EDU-DEGREE(WS-I) NOT = SPACES
-                   *> Display education entry
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Degree: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-EDU-DEGREE(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Degree: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-EDU-DEGREE(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-       
-                   *> Display university
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " University: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-EDU-SCHOOL(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " University: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-EDU-SCHOOL(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-       
-                   *> Display years
                    MOVE SPACES TO WS-OUTLINE
-                   STRING
-                       " Years: "
-                       DELIMITED BY SIZE
-                       FUNCTION TRIM(WS-EDU-YEAR(WS-I))
-                       DELIMITED BY SIZE
-                       INTO WS-OUTLINE
+                   STRING " Years: " DELIMITED BY SIZE
+                          FUNCTION TRIM(WS-EDU-YEAR(WS-I))
+                          DELIMITED BY SIZE INTO WS-OUTLINE
                    END-STRING
                    PERFORM PRINT-LINE
-       
                    MOVE SPACES TO WS-OUTLINE
                    PERFORM PRINT-LINE
                END-IF
                ADD 1 TO WS-I
            END-PERFORM
-       
-           *> If no education
            IF WS-EDU-DEGREE(1) = SPACES
                MOVE " None" TO WS-OUTLINE
                PERFORM PRINT-LINE
            END-IF
-           
-           *> Display footer
            MOVE "--------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE.
 
@@ -2161,37 +1646,24 @@
       *> JOB SEARCH / INTERNSHIP ROUTINES           *
       *>*********************************************
 
-      *>---------------------------------------------
-      *> JOB-SEARCH-MENU
-      *> Purpose: Display job search/internship menu
-      *> Called: From AFTER-LOGIN-MENU option 6
-      *>---------------------------------------------
        JOB-SEARCH-MENU.
            MOVE "--- Job Search/Internship Menu ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           
            MOVE "1. Post a Job/Internship" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            MOVE "2. Browse Jobs/Internships" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            MOVE "3. View My Applications" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            MOVE "4. Back to Main Menu" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
-
            PERFORM REQUIRE-INPUT
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
-           END-IF 
-
+           END-IF
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-
            EVALUATE WS-TRIMMED
                WHEN "1"
                    PERFORM POST-JOB-INTERN
@@ -2210,122 +1682,77 @@
                    PERFORM JOB-SEARCH-MENU
            END-EVALUATE.
 
-      *>---------------------------------------------
-      *> POST-JOB-INTERN
-      *> Purpose: Capture job/internship details
-      *> Called: From JOB-SEARCH-MENU option 1
-      *>---------------------------------------------
        POST-JOB-INTERN.
            MOVE "--- Post a New Job/Internship ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            MOVE "Enter Job Title:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
-
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
-
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-TITLE
-
-           MOVE "Enter Description (max 200 chars):" 
-               TO WS-OUTLINE
+           MOVE "Enter Description (max 200 chars):" TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
-
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
-
            MOVE FUNCTION TRIM(WS-INLINE)(1:200) TO WS-JOB-DESC
-
            MOVE "Enter Employer Name:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
-
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
-
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-EMPLOYER
-
            MOVE "Enter Location:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
-
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
-
            MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-LOCATION
-
-           MOVE 
-           "Enter Salary (optional, enter 'NONE' to skip):"
+           MOVE "Enter Salary (optional, enter 'NONE' to skip):"
                TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
-
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
-
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-
            IF FUNCTION UPPER-CASE(WS-TRIMMED) = "NONE"
                MOVE SPACES TO WS-JOB-SALARY
            ELSE
-               MOVE FUNCTION TRIM(WS-INLINE)(1:40) 
-                   TO WS-JOB-SALARY
+               MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-JOB-SALARY
            END-IF
-
            PERFORM SAVE-JOB-POSTING
-
            MOVE "Job posted successfully!" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "----------------------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE.
 
-      *>---------------------------------------------
-      *> SAVE-JOB-POSTING
-      *> Purpose: Persist job posting to jobs.dat
-      *> Format: poster|title|description|employer|
-      *>         location|salary
-      *> Called: After job details are captured
-      *>---------------------------------------------
        SAVE-JOB-POSTING.
-           *> Build pipe-delimited job record
            MOVE SPACES TO WS-JOB-LINE
            STRING
-               FUNCTION TRIM(WS-CURRENT-USERNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-CURRENT-USERNAME) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-JOB-TITLE)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-TITLE) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-JOB-DESC)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-DESC) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-JOB-EMPLOYER)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-EMPLOYER) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-JOB-LOCATION)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-LOCATION) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-JOB-SALARY)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-SALARY) DELIMITED BY SIZE
                INTO WS-JOB-LINE
            END-STRING
-
-           *> Open file in EXTEND mode to append
            OPEN EXTEND JOBS-FILE
-
            IF WS-JOBS-STAT = "41"
-               *> File already open, close and reopen
                CLOSE JOBS-FILE
                OPEN EXTEND JOBS-FILE
            END-IF
-
            IF WS-JOBS-STAT = "00" OR WS-JOBS-STAT = "05"
                WRITE JOBS-REC FROM WS-JOB-LINE
                CLOSE JOBS-FILE
@@ -2334,21 +1761,14 @@
                    WS-JOBS-STAT
            END-IF.
 
-      *> still writing this.....
-
-
-
-      *> count the number of jobs for later reference
        COUNT-JOBS.
            MOVE 0 TO WS-JOB-CNT
            SET JOBS-EOF-NO TO TRUE
-       
            OPEN INPUT JOBS-FILE
            IF WS-JOBS-STAT NOT = "00"
                CLOSE JOBS-FILE
                EXIT PARAGRAPH
            END-IF
-       
            PERFORM UNTIL JOBS-EOF-YES
                READ JOBS-FILE INTO WS-JOB-LINE
                    AT END
@@ -2359,21 +1779,17 @@
                        END-IF
                END-READ
            END-PERFORM
-
            CLOSE JOBS-FILE
            SET JOBS-EOF-NO TO TRUE.
-      *> read jobs file until EOF of jobs file, each job will have a summary printed
 
        DISPLAY-JOB-LIST.
            MOVE 0 TO WS-JOB-ID
            SET JOBS-EOF-NO TO TRUE
-       
            OPEN INPUT JOBS-FILE
            IF WS-JOBS-STAT NOT = "00"
                CLOSE JOBS-FILE
                EXIT PARAGRAPH
            END-IF
-       
            PERFORM UNTIL JOBS-EOF-YES
                READ JOBS-FILE INTO WS-JOB-LINE
                    AT END
@@ -2386,11 +1802,9 @@
                        END-IF
                END-READ
            END-PERFORM
-       
            CLOSE JOBS-FILE
            SET JOBS-EOF-NO TO TRUE.
-      *> does same as function that parses each job fully, but
-      *> does not move the data into the main WS-JOB-* fields
+
        PARSE-JOB-LINE-FOR-SUMMARY.
            MOVE SPACES TO WS-JOB-PARSE-POSTER
            MOVE SPACES TO WS-JOB-PARSE-TITLE
@@ -2398,18 +1812,13 @@
            MOVE SPACES TO WS-JOB-PARSE-EMP
            MOVE SPACES TO WS-JOB-PARSE-LOC
            MOVE SPACES TO WS-JOB-PARSE-SAL
-       
            UNSTRING WS-JOB-LINE
                DELIMITED BY "|"
-               INTO WS-JOB-PARSE-POSTER
-                    WS-JOB-PARSE-TITLE
-                    WS-JOB-PARSE-DESC
-                    WS-JOB-PARSE-EMP
-                    WS-JOB-PARSE-LOC
-                    WS-JOB-PARSE-SAL
+               INTO WS-JOB-PARSE-POSTER WS-JOB-PARSE-TITLE
+                    WS-JOB-PARSE-DESC   WS-JOB-PARSE-EMP
+                    WS-JOB-PARSE-LOC    WS-JOB-PARSE-SAL
            END-UNSTRING.
-      *> use data in parsed fields to print custom "summary" for each job
-     
+
        PRINT-JOB-SUMMARY.
            MOVE SPACES TO WS-OUTLINE
            STRING
@@ -2422,20 +1831,15 @@
                INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE.
-      *> function that reads each job line by line until the job ID#
-      *> matches the one selected. When job is found, function terminates
-      *> and does basic clean up
+
        LOAD-JOB-BY-NUM.
-           
            MOVE 0 TO WS-JOB-ID
            SET JOBS-EOF-NO TO TRUE
-       
            OPEN INPUT JOBS-FILE
            IF WS-JOBS-STAT NOT = "00"
                CLOSE JOBS-FILE
                EXIT PARAGRAPH
            END-IF
-      *>   read data from jobs file line by line
            PERFORM UNTIL JOBS-EOF-YES
                READ JOBS-FILE INTO WS-JOB-LINE
                    AT END
@@ -2450,77 +1854,58 @@
                        END-IF
                END-READ
            END-PERFORM
-       
            CLOSE JOBS-FILE
            SET JOBS-EOF-NO TO TRUE.
 
-       *> job line is parsed fully, including unused poster field
-       *> this is because parsing without requires wasted computation
        PARSE-JOB-LINE-FULL.
-           *> despite ignoring poster field, will still need it for parsing
            MOVE SPACES TO WS-JOB-PARSE-POSTER
            MOVE SPACES TO WS-JOB-PARSE-TITLE
            MOVE SPACES TO WS-JOB-PARSE-DESC
            MOVE SPACES TO WS-JOB-PARSE-EMP
            MOVE SPACES TO WS-JOB-PARSE-LOC
            MOVE SPACES TO WS-JOB-PARSE-SAL
-       
            UNSTRING WS-JOB-LINE
                DELIMITED BY "|"
-               INTO WS-JOB-PARSE-POSTER
-                    WS-JOB-PARSE-TITLE
-                    WS-JOB-PARSE-DESC
-                    WS-JOB-PARSE-EMP
-                    WS-JOB-PARSE-LOC
-                    WS-JOB-PARSE-SAL
+               INTO WS-JOB-PARSE-POSTER WS-JOB-PARSE-TITLE
+                    WS-JOB-PARSE-DESC   WS-JOB-PARSE-EMP
+                    WS-JOB-PARSE-LOC    WS-JOB-PARSE-SAL
            END-UNSTRING
-       
            MOVE FUNCTION TRIM(WS-JOB-PARSE-TITLE) TO WS-JOB-TITLE
            MOVE FUNCTION TRIM(WS-JOB-PARSE-DESC)  TO WS-JOB-DESC
            MOVE FUNCTION TRIM(WS-JOB-PARSE-EMP)   TO WS-JOB-EMPLOYER
            MOVE FUNCTION TRIM(WS-JOB-PARSE-LOC)   TO WS-JOB-LOCATION
            MOVE FUNCTION TRIM(WS-JOB-PARSE-SAL)   TO WS-JOB-SALARY.
 
-
-
-
-      *>function to display jobs details, ignores poster field
-      *> poster field was used by prior dev(s)
        VIEW-JOB-DETAILS.
            MOVE "--- Job details ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
-       
            MOVE SPACES TO WS-OUTLINE
            STRING "Title: " DELIMITED BY SIZE
                   FUNCTION TRIM(WS-JOB-TITLE) DELIMITED BY SIZE
                   INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-       
            MOVE SPACES TO WS-OUTLINE
            STRING "Description: " DELIMITED BY SIZE
                   FUNCTION TRIM(WS-JOB-DESC) DELIMITED BY SIZE
                   INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-       
            MOVE SPACES TO WS-OUTLINE
            STRING "Employer: " DELIMITED BY SIZE
                   FUNCTION TRIM(WS-JOB-EMPLOYER) DELIMITED BY SIZE
                   INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-       
            MOVE SPACES TO WS-OUTLINE
            STRING "Location: " DELIMITED BY SIZE
                   FUNCTION TRIM(WS-JOB-LOCATION) DELIMITED BY SIZE
                   INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
-      *> this means if salary is not "NONE" or blank, print the salary line
-      *> else, do not
            IF FUNCTION TRIM(WS-JOB-SALARY) NOT = SPACES
-              AND FUNCTION UPPER-CASE(FUNCTION TRIM(WS-JOB-SALARY)) NOT = "NONE"
+              AND FUNCTION UPPER-CASE(
+                  FUNCTION TRIM(WS-JOB-SALARY)) NOT = "NONE"
                MOVE SPACES TO WS-OUTLINE
                STRING "Salary: " DELIMITED BY SIZE
                       FUNCTION TRIM(WS-JOB-SALARY) DELIMITED BY SIZE
@@ -2528,25 +1913,19 @@
                END-STRING
                PERFORM PRINT-LINE
            END-IF
-       
            MOVE "-------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE
-       
            MOVE "Apply for this job" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "Back to job list" TO WS-OUTLINE
            PERFORM PRINT-LINE
-       
            MOVE "Enter your choice:" TO WS-OUTLINE
            PERFORM PRINT-INLINE
            PERFORM REQUIRE-INPUT
-       
            IF EXIT-YES OR EOF-YES
                EXIT PARAGRAPH
            END-IF
-       
            MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-       
            EVALUATE TRUE
                WHEN WS-TRIMMED = "1"
                  OR WS-TRIMMED = "Apply for this job"
@@ -2565,39 +1944,29 @@
                    CONTINUE
            END-EVALUATE.
 
-      *> browse job function
        BROWSE-JOBS.
            PERFORM COUNT-JOBS
-
            MOVE "--- Available Job Listings ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
            IF WS-JOB-CNT = 0
                MOVE "----------------------------" TO WS-OUTLINE
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-
            PERFORM DISPLAY-JOB-LIST
-
            MOVE "----------------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE
-           *> an impossible number for job selection 
            MOVE 10000 TO WS-JOB-SELECT
            PERFORM UNTIL WS-JOB-SELECT = 0 OR EXIT-YES OR EOF-YES
                MOVE "Enter job number to view details, or 0 to go back:"
-               TO WS-OUTLINE
+                   TO WS-OUTLINE
                PERFORM PRINT-INLINE
-
                PERFORM REQUIRE-INPUT
                IF EXIT-YES OR EOF-YES
                    EXIT PARAGRAPH
                END-IF
-
                MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-
                MOVE FUNCTION NUMVAL(WS-TRIMMED) TO WS-JOB-SELECT
-
                IF WS-JOB-SELECT = 0 AND WS-TRIMMED NOT = "0"
                    MOVE "Invalid choice." TO WS-OUTLINE
                    PERFORM PRINT-LINE
@@ -2606,16 +1975,13 @@
                    IF WS-JOB-SELECT = 0
                        EXIT PERFORM
                    END-IF
-
                    IF WS-JOB-SELECT < 1 OR WS-JOB-SELECT > WS-JOB-CNT
                        MOVE "Invalid choice." TO WS-OUTLINE
                        PERFORM PRINT-LINE
                        MOVE 99999 TO WS-JOB-SELECT
                    ELSE
                        PERFORM LOAD-JOB-BY-NUM
-
                        PERFORM VIEW-JOB-DETAILS
-
                        MOVE "--- Available job listings ---" TO WS-OUTLINE
                        PERFORM PRINT-LINE
                        PERFORM DISPLAY-JOB-LIST
@@ -2623,43 +1989,28 @@
                        PERFORM PRINT-LINE
                    END-IF
                END-IF
-
            END-PERFORM
-
            MOVE 0 TO WS-JOB-SELECT.
 
-      *> other dev will implement this and view my application functionality
-      *> for job search menu
-      *> this implies some kind of file persistence
        NOTE-JOB-APPLICATION.
-           *> Build pipe-delimited application record:
-           *> username|job_title|employer|location|job_number
            MOVE SPACES TO WS-APPS-LINE
            STRING
-               FUNCTION TRIM(WS-CURRENT-USERNAME)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-CURRENT-USERNAME) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-JOB-TITLE)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-TITLE) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-JOB-EMPLOYER)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-EMPLOYER) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               FUNCTION TRIM(WS-JOB-LOCATION)
-               DELIMITED BY SIZE
+               FUNCTION TRIM(WS-JOB-LOCATION) DELIMITED BY SIZE
                "|" DELIMITED BY SIZE
-               WS-JOB-SELECT
-               DELIMITED BY SIZE
+               WS-JOB-SELECT DELIMITED BY SIZE
                INTO WS-APPS-LINE
            END-STRING
-
            OPEN EXTEND APPS-FILE
-
            IF WS-APPS-STAT = "41"
                CLOSE APPS-FILE
                OPEN EXTEND APPS-FILE
            END-IF
-
            IF WS-APPS-STAT = "00" OR WS-APPS-STAT = "05"
                WRITE APPS-REC FROM WS-APPS-LINE
                CLOSE APPS-FILE
@@ -2668,26 +2019,66 @@
                    WS-APPS-STAT
            END-IF.
 
+      *>*********************************************
+      *> MESSAGES MENU (WEEK 8)                     *
+      *> Uses WS-MSG-MENU-EXIT (local flag) so that *
+      *> "Back to Main Menu" does NOT set EXIT-YES  *
+      *> and accidentally log the user out.         *
+      *>*********************************************
+       MESSAGES-MENU.
+           SET MSG-MENU-EXIT-NO TO TRUE
+
+           PERFORM UNTIL MSG-MENU-EXIT-YES OR EOF-YES
+
+               MOVE "--- Messages Menu ---" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "1. Send a New Message" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "2. View My Messages" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "3. Back to Main Menu" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "Enter your choice:" TO WS-OUTLINE
+               PERFORM PRINT-INLINE
+
+               PERFORM REQUIRE-INPUT
+               IF EOF-YES
+                   SET EXIT-YES TO TRUE
+                   EXIT PERFORM
+               END-IF
+               IF EXIT-YES
+                   EXIT PERFORM
+               END-IF
+
+               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+
+               EVALUATE WS-TRIMMED
+                   WHEN "1"
+                       PERFORM SEND-MESSAGE
+                   WHEN "2"
+                       PERFORM VIEW-MY-MESSAGES
+                   WHEN "3"
+                       SET MSG-MENU-EXIT-YES TO TRUE
+                   WHEN OTHER
+                       MOVE "Invalid choice." TO WS-OUTLINE
+                       PERFORM PRINT-LINE
+               END-EVALUATE
+
+           END-PERFORM.
+
        VIEW-MY-APPLICATIONS.
            MOVE 0 TO WS-APPS-COUNT-NUM
            SET APPS-EOF-NO TO TRUE
-
-           *> Print report header
            MOVE "--- Your Job Applications ---" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE SPACES TO WS-OUTLINE
-           STRING
-               "Application Summary for "
-               DELIMITED BY SIZE
-               FUNCTION TRIM(WS-CURRENT-USERNAME)
-               DELIMITED BY SIZE
-               INTO WS-OUTLINE
+           STRING "Application Summary for " DELIMITED BY SIZE
+                  FUNCTION TRIM(WS-CURRENT-USERNAME) DELIMITED BY SIZE
+                  INTO WS-OUTLINE
            END-STRING
            PERFORM PRINT-LINE
            MOVE "------------------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE
-
-           *> Open applications file
            OPEN INPUT APPS-FILE
            IF WS-APPS-STAT NOT = "00"
                MOVE "No applications found." TO WS-OUTLINE
@@ -2696,73 +2087,53 @@
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
-
-           *> Read and display each matching application
            PERFORM UNTIL APPS-EOF-YES
                READ APPS-FILE INTO WS-APPS-LINE
                    AT END
                        SET APPS-EOF-YES TO TRUE
                    NOT AT END
-                       *> Parse the record
                        MOVE SPACES TO WS-APP-PARSE-USER
                        MOVE SPACES TO WS-APP-PARSE-TITLE
                        MOVE SPACES TO WS-APP-PARSE-EMP
                        MOVE SPACES TO WS-APP-PARSE-LOC
-
                        UNSTRING WS-APPS-LINE
                            DELIMITED BY "|"
-                           INTO WS-APP-PARSE-USER
-                                WS-APP-PARSE-TITLE
-                                WS-APP-PARSE-EMP
-                                WS-APP-PARSE-LOC
+                           INTO WS-APP-PARSE-USER  WS-APP-PARSE-TITLE
+                                WS-APP-PARSE-EMP   WS-APP-PARSE-LOC
                                 WS-APP-PARSE-JOBNUM
                        END-UNSTRING
-
-                       *> Only display if it belongs to current user
                        IF FUNCTION TRIM(WS-APP-PARSE-USER) =
                           FUNCTION TRIM(WS-CURRENT-USERNAME)
                            ADD 1 TO WS-APPS-COUNT-NUM
-
                            MOVE SPACES TO WS-OUTLINE
                            STRING "Job Title: " DELIMITED BY SIZE
                                   FUNCTION TRIM(WS-APP-PARSE-TITLE)
-                                  DELIMITED BY SIZE
-                                  INTO WS-OUTLINE
+                                  DELIMITED BY SIZE INTO WS-OUTLINE
                            END-STRING
                            PERFORM PRINT-LINE
-
                            MOVE SPACES TO WS-OUTLINE
                            STRING "Employer: " DELIMITED BY SIZE
                                   FUNCTION TRIM(WS-APP-PARSE-EMP)
-                                  DELIMITED BY SIZE
-                                  INTO WS-OUTLINE
+                                  DELIMITED BY SIZE INTO WS-OUTLINE
                            END-STRING
                            PERFORM PRINT-LINE
-
                            MOVE SPACES TO WS-OUTLINE
                            STRING "Location: " DELIMITED BY SIZE
                                   FUNCTION TRIM(WS-APP-PARSE-LOC)
-                                  DELIMITED BY SIZE
-                                  INTO WS-OUTLINE
+                                  DELIMITED BY SIZE INTO WS-OUTLINE
                            END-STRING
                            PERFORM PRINT-LINE
-
                            MOVE "---" TO WS-OUTLINE
                            PERFORM PRINT-LINE
                        END-IF
                END-READ
            END-PERFORM
-
            CLOSE APPS-FILE
            SET APPS-EOF-NO TO TRUE
-
-           *> Handle empty case
            IF WS-APPS-COUNT-NUM = 0
                MOVE "You have not applied to any jobs yet." TO WS-OUTLINE
                PERFORM PRINT-LINE
            END-IF
-
-           *> Print total count footer
            MOVE "------------------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE SPACES TO WS-OUTLINE
@@ -2774,3 +2145,13 @@
            PERFORM PRINT-LINE
            MOVE "------------------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE.
+
+      *>*********************************************
+      *> MESSAGING COPYBOOK (WEEK 8)                *
+      *>*********************************************
+       COPY SENDMESSAGE_SRC.
+
+
+
+
+       

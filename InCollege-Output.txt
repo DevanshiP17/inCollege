@@ -1,0 +1,48 @@
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: 1
+Please enter your username: TestUser
+Please enter your password: Password1!
+You have successfully logged in.
+Welcome, TestUser!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for User
+4. View My Pending Connection Requests
+5. Learn a New Skill
+6. View My Network
+7. Go Back
+8. Job Search/Internship
+9. Messages
+Enter your choice: 9
+--- Messages Menu ---
+1. Send a New Message
+2. View My Messages
+3. Back to Main Menu
+Enter your choice: 1
+Enter recipient's username (must be a connection): alice
+You can only message users you are connected with.
+--- Messages Menu ---
+1. Send a New Message
+2. View My Messages
+3. Back to Main Menu
+Enter your choice:
+Invalid choice.
+--- Messages Menu ---
+1. Send a New Message
+2. View My Messages
+3. Back to Main Menu
+Enter your choice:
+Invalid choice.
+--- Messages Menu ---
+1. Send a New Message
+2. View My Messages
+3. Back to Main Menu
+Enter your choice:
+Invalid choice.
+--- Messages Menu ---
+1. Send a New Message
+2. View My Messages
+3. Back to Main Menu
+--- END_OF_PROGRAM_EXECUTION ---
