@@ -66,10 +66,10 @@
        01 ACCT-REC PIC X(256).
 
        FD PROFILES-FILE.
-       01 PROFILE-REC PIC X(512).
+       01 PROFILE-REC PIC X(1024).
        
        FD TEMP-PROFILES-FILE.
-       01 TEMP-PROFILE-REC PIC X(512).
+       01 TEMP-PROFILE-REC PIC X(1024).
 
        FD CONN-FILE.
        01 CONN-REC PIC X(256).
@@ -164,7 +164,7 @@
        01 WS-TMP-PASS               PIC X(12).
        01 WS-I                      PIC 9 VALUE 0.
 
-       01 WS-PROFILE-LINE PIC X(512).
+       01 WS-PROFILE-LINE PIC X(1024).
        01 WS-TEMP-PROFILE-LINE PIC X(512).
        
        01 WS-PARSED-PROFILE.
@@ -197,7 +197,7 @@
        
        01 WS-UNSTRING-PTR PIC 999 VALUE 0.
        01 WS-PROFILE-COUNT PIC 999 VALUE 0.
-      
+     
        01 WS-SEARCH-INPUT PIC X(256).
        01 WS-SEARCH-FNAME PIC X(20).
        01 WS-SEARCH-LNAME PIC X(20).
@@ -226,7 +226,7 @@
        01 WS-PROFILE.
           05 WS-P-NAME.
              10 WS-P-FNAME  PIC X(20) VALUE SPACES.
-             10 WS-P-LNAME  PIC X(20) VALUE SPACES. 
+             10 WS-P-LNAME  PIC X(20) VALUE SPACES.
           05 WS-P-MAJOR       PIC X(40)  VALUE SPACES.
           05 WS-P-UNIVERSITY  PIC X(40)  VALUE SPACES.
           05 WS-P-GRAD-YEAR   PIC X(4)   VALUE SPACES.
@@ -341,6 +341,16 @@
           88 MSG-MENU-EXIT-YES  VALUE "Y".
           88 MSG-MENU-EXIT-NO   VALUE "N".
 
+       *> Local exit flag for JOB-SEARCH-MENU only.
+       01 WS-JOB-MENU-EXIT      PIC X VALUE "N".
+          88 JOB-MENU-EXIT-YES  VALUE "Y".
+          88 JOB-MENU-EXIT-NO   VALUE "N".
+
+       *> Local exit flag for LEARN-A-SKILL only.
+       01 WS-LEARN-MENU-EXIT    PIC X VALUE "N".
+          88 LEARN-MENU-EXIT-YES VALUE "Y".
+          88 LEARN-MENU-EXIT-NO  VALUE "N".
+
 
        PROCEDURE DIVISION.
        MAIN.
@@ -446,23 +456,16 @@
                END-IF
            END-IF.
 
-           *> Initialize messages.dat
+           *> messages.dat is OPTIONAL - created on first write by SAVE-MESSAGE.
+           *> CLOSE on any open outcome so file is not left in virtual-open
+           *> state before SAVE-MESSAGE later calls OPEN EXTEND.
            OPEN INPUT MSGS-FILE
-           IF WS-MSGS-STAT = "00"
+           IF WS-MSGS-STAT = "00" OR WS-MSGS-STAT = "05"
+               OR WS-MSGS-STAT = "35"
                CLOSE MSGS-FILE
            ELSE
-               IF WS-MSGS-STAT = "05" OR WS-MSGS-STAT = "35"
-                   OPEN OUTPUT MSGS-FILE
-                   IF WS-MSGS-STAT = "00" OR WS-MSGS-STAT = "05"
-                       CLOSE MSGS-FILE
-                   ELSE
-                       DISPLAY "ERROR: Cannot create messages.dat. Status="
-                           WS-MSGS-STAT
-                   END-IF
-               ELSE
-                   DISPLAY "ERROR: Cannot open messages.dat. Status="
-                       WS-MSGS-STAT
-               END-IF
+               DISPLAY "ERROR: Cannot access messages.dat. Status="
+                   WS-MSGS-STAT
            END-IF.
 
        CLOSE-FILES.
@@ -526,6 +529,10 @@
 
        TOP-LEVEL-MENU.
            MOVE "Welcome to InCollege!" TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE SPACES TO WS-OUTLINE
+           PERFORM PRINT-LINE
+           MOVE "---------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE
            MOVE "1. Log In" TO WS-OUTLINE
            PERFORM PRINT-LINE
@@ -882,7 +889,7 @@
               END-STRING
               PERFORM PRINT-INLINE
               PERFORM REQUIRE-INPUT
-              MOVE FUNCTION TRIM(WS-INLINE)(1:20) TO WS-WORK-DATES(WS-I)
+              MOVE FUNCTION TRIM(WS-INLINE)(1:40) TO WS-WORK-DATES(WS-I)
               MOVE SPACES TO WS-OUTLINE
               STRING "Experience #" DELIMITED BY SIZE
                      WS-I DELIMITED BY SIZE
@@ -1013,40 +1020,50 @@
            END-EVALUATE.
 
        LEARN-A-SKILL.
-           MOVE "Learn a New Skill:" TO WS-OUTLINE
-           PERFORM PRINT-INLINE
-           MOVE "Skill 1" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Skill 2" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Skill 3" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Skill 4" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Skill 5" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Go Back" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Enter your choice:" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           PERFORM REQUIRE-INPUT
-           IF EXIT-YES OR EOF-YES
-              EXIT PARAGRAPH
-           END-IF
-           MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-           IF WS-TRIMMED = "Logout" OR WS-TRIMMED = "logout"
-               OR WS-TRIMMED = "log out" OR WS-TRIMMED = "Log out"
-               OR WS-TRIMMED = "Log Out"
-               SET EXIT-YES TO TRUE
-               EXIT PARAGRAPH
-           END-IF
-           IF WS-TRIMMED = "Go Back" OR WS-TRIMMED = "6"
-                   OR WS-TRIMMED = "back"
-               EXIT PARAGRAPH
-           END-IF
-           MOVE "This skill is under construction." TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           PERFORM LEARN-A-SKILL.
+           SET LEARN-MENU-EXIT-NO TO TRUE
+
+           PERFORM UNTIL LEARN-MENU-EXIT-YES OR EOF-YES
+
+               MOVE "Learn a New Skill:" TO WS-OUTLINE
+               PERFORM PRINT-INLINE
+               MOVE "Skill 1" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "Skill 2" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "Skill 3" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "Skill 4" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "Skill 5" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "Go Back" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "Enter your choice:" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               PERFORM REQUIRE-INPUT
+               IF EOF-YES
+                   SET EXIT-YES TO TRUE
+                   EXIT PERFORM
+               END-IF
+               IF EXIT-YES
+                   EXIT PERFORM
+               END-IF
+               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+               IF WS-TRIMMED = "Logout" OR WS-TRIMMED = "logout"
+                   OR WS-TRIMMED = "log out" OR WS-TRIMMED = "Log out"
+                   OR WS-TRIMMED = "Log Out"
+                   SET EXIT-YES TO TRUE
+                   EXIT PERFORM
+               END-IF
+               IF WS-TRIMMED = "Go Back" OR WS-TRIMMED = "6"
+                       OR WS-TRIMMED = "back"
+                   SET LEARN-MENU-EXIT-YES TO TRUE
+               ELSE
+                   MOVE "This skill is under construction." TO WS-OUTLINE
+                   PERFORM PRINT-LINE
+               END-IF
+
+           END-PERFORM.
 
        FIND-USER.
            MOVE "Enter the full name of the person you are looking for:"
@@ -1518,7 +1535,10 @@
            CALL "SYSTEM" USING "rm -f profiles.dat"
            END-CALL
            CALL "SYSTEM" USING "mv temp-profiles.dat profiles.dat"
-           END-CALL.
+           END-CALL
+           IF RETURN-CODE NOT = 0
+               DISPLAY "ERROR: Failed to replace profiles.dat. Data may be lost."
+           END-IF.
        
        CLEAR-PROFILE-DATA.
            MOVE SPACES TO WS-PROFILE.
@@ -1647,40 +1667,49 @@
       *>*********************************************
 
        JOB-SEARCH-MENU.
-           MOVE "--- Job Search/Internship Menu ---" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "1. Post a Job/Internship" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "2. Browse Jobs/Internships" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "3. View My Applications" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "4. Back to Main Menu" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE "Enter your choice:" TO WS-OUTLINE
-           PERFORM PRINT-INLINE
-           PERFORM REQUIRE-INPUT
-           IF EXIT-YES OR EOF-YES
-               EXIT PARAGRAPH
-           END-IF
-           MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-           EVALUATE WS-TRIMMED
-               WHEN "1"
-                   PERFORM POST-JOB-INTERN
-                   PERFORM JOB-SEARCH-MENU
-               WHEN "2"
-                   PERFORM BROWSE-JOBS
-                   PERFORM JOB-SEARCH-MENU
-               WHEN "3"
-                   PERFORM VIEW-MY-APPLICATIONS
-                   PERFORM JOB-SEARCH-MENU
-               WHEN "4"
-                   EXIT PARAGRAPH
-               WHEN OTHER
-                   MOVE "Invalid choice." TO WS-OUTLINE
-                   PERFORM PRINT-LINE
-                   PERFORM JOB-SEARCH-MENU
-           END-EVALUATE.
+           SET JOB-MENU-EXIT-NO TO TRUE
+
+           PERFORM UNTIL JOB-MENU-EXIT-YES OR EOF-YES
+
+               MOVE "--- Job Search/Internship Menu ---" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "1. Post a Job/Internship" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "2. Browse Jobs/Internships" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "3. View My Applications" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "4. Back to Main Menu" TO WS-OUTLINE
+               PERFORM PRINT-LINE
+               MOVE "Enter your choice:" TO WS-OUTLINE
+               PERFORM PRINT-INLINE
+
+               PERFORM REQUIRE-INPUT
+               IF EOF-YES
+                   SET EXIT-YES TO TRUE
+                   EXIT PERFORM
+               END-IF
+               IF EXIT-YES
+                   EXIT PERFORM
+               END-IF
+
+               MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
+
+               EVALUATE WS-TRIMMED
+                   WHEN "1"
+                       PERFORM POST-JOB-INTERN
+                   WHEN "2"
+                       PERFORM BROWSE-JOBS
+                   WHEN "3"
+                       PERFORM VIEW-MY-APPLICATIONS
+                   WHEN "4"
+                       SET JOB-MENU-EXIT-YES TO TRUE
+                   WHEN OTHER
+                       MOVE "Invalid choice." TO WS-OUTLINE
+                       PERFORM PRINT-LINE
+               END-EVALUATE
+
+           END-PERFORM.
 
        POST-JOB-INTERN.
            MOVE "--- Post a New Job/Internship ---" TO WS-OUTLINE
@@ -1966,7 +1995,11 @@
                    EXIT PARAGRAPH
                END-IF
                MOVE FUNCTION TRIM(WS-INLINE) TO WS-TRIMMED
-               MOVE FUNCTION NUMVAL(WS-TRIMMED) TO WS-JOB-SELECT
+               IF FUNCTION TEST-NUMVAL(WS-TRIMMED) = 1
+                   MOVE FUNCTION NUMVAL(WS-TRIMMED) TO WS-JOB-SELECT
+               ELSE
+                   MOVE 99999 TO WS-JOB-SELECT
+               END-IF
                IF WS-JOB-SELECT = 0 AND WS-TRIMMED NOT = "0"
                    MOVE "Invalid choice." TO WS-OUTLINE
                    PERFORM PRINT-LINE
@@ -2150,8 +2183,7 @@
       *> MESSAGING COPYBOOK (WEEK 8)                *
       *>*********************************************
        COPY SENDMESSAGE_SRC.
-
-
+       COPY VIEWMESSAGES_SRC.
 
 
        

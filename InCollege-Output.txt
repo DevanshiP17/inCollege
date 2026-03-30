@@ -1,4 +1,6 @@
 Welcome to InCollege!
+
+---------------------
 1. Log In
 2. Create New Account
 Enter your choice: 1
@@ -22,13 +24,9 @@ Enter your choice: 9
 3. Back to Main Menu
 Enter your choice: 1
 Enter recipient's username (must be a connection): alice
-You can only message users you are connected with.
---- Messages Menu ---
-1. Send a New Message
-2. View My Messages
-3. Back to Main Menu
-Enter your choice:
-Invalid choice.
+Enter your message (max 200 chars): My name is John. Nice to meet you!
+Message sent to alice successfully!
+---------------------
 --- Messages Menu ---
 1. Send a New Message
 2. View My Messages

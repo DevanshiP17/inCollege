@@ -1,6 +1,6 @@
 *>*********************************************
       *> SENDMESSAGE_SRC.cob                        *
-      *> Copybook: Send Message & View Messages     *
+      *> Copybook: Send Message                     *
       *> Week 8 - Basic Messaging System Part 1     *
       *>*********************************************
 
@@ -29,6 +29,9 @@
                PERFORM PRINT-LINE
                EXIT PARAGRAPH
            END-IF
+
+      *>   Load connections into memory for validation
+           PERFORM LOAD-CONN-FOR-MSG
 
       *>   Validate: recipient must be an accepted connection
            PERFORM CHECK-MSG-RECIPIENT-CONNECTED
@@ -79,6 +82,8 @@
                " successfully!"          DELIMITED BY SIZE
                INTO WS-OUTLINE
            END-STRING
+           PERFORM PRINT-LINE
+           MOVE "---------------------" TO WS-OUTLINE
            PERFORM PRINT-LINE.
 
       *>---------------------------------------------
@@ -157,131 +162,70 @@
            IF WS-MSGS-STAT = "41"
                CLOSE MSGS-FILE
                OPEN EXTEND MSGS-FILE
+               IF WS-MSGS-STAT NOT = "00" AND
+                  WS-MSGS-STAT NOT = "05"
+                   DISPLAY "ERROR: Cannot re-open messages.dat."
+                       " Status=" WS-MSGS-STAT
+                   EXIT PARAGRAPH
+               END-IF
            END-IF
 
-           IF WS-MSGS-STAT = "00" OR WS-MSGS-STAT = "05"
+           *> File does not exist yet - close virtual open then create it
+           IF WS-MSGS-STAT = "05" OR WS-MSGS-STAT = "35"
+               CLOSE MSGS-FILE
+               OPEN OUTPUT MSGS-FILE
+           END-IF
+
+           IF WS-MSGS-STAT = "00"
                WRITE MSGS-REC FROM WS-MSG-LINE
+               IF WS-MSGS-STAT NOT = "00"
+                   DISPLAY "ERROR: Write to messages.dat failed. Status="
+                       WS-MSGS-STAT
+                   CLOSE MSGS-FILE
+                   EXIT PARAGRAPH
+               END-IF
                CLOSE MSGS-FILE
            ELSE
-               DISPLAY "ERROR: Cannot write to messages.dat. Status="
+               DISPLAY "ERROR: Cannot open messages.dat. Status="
                    WS-MSGS-STAT
+               EXIT PARAGRAPH
            END-IF.
 
       *>---------------------------------------------
-      *> VIEW-MY-MESSAGES
-      *> Purpose: Display all messages sent to or
-      *>          from the logged-in user.
-      *> Called:  From MESSAGES-MENU option 2
+      *> LOAD-CONN-FOR-MSG
+      *> Purpose: Read connections.dat into WS-CA-*
+      *>          array so CHECK-MSG-RECIPIENT-CONNECTED
+      *>          can validate the sender/recipient pair.
       *>---------------------------------------------
-       VIEW-MY-MESSAGES.
-           MOVE 0 TO WS-MSG-COUNT-NUM
-           SET MSG-VIEW-EOF-NO TO TRUE
+       LOAD-CONN-FOR-MSG.
+           MOVE 0 TO WS-CONN-TOTAL
+           SET CONN-EOF-NO TO TRUE
 
-           MOVE "--- Your Messages ---" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-
-           OPEN INPUT MSGS-FILE
-           IF WS-MSGS-STAT NOT = "00"
-               MOVE "No messages found." TO WS-OUTLINE
-               PERFORM PRINT-LINE
-               MOVE "---------------------" TO WS-OUTLINE
-               PERFORM PRINT-LINE
+           OPEN INPUT CONN-FILE
+           IF WS-CONN-STAT NOT = "00"
                EXIT PARAGRAPH
            END-IF
 
-           PERFORM UNTIL MSG-VIEW-EOF-YES
-               READ MSGS-FILE INTO WS-MSG-LINE
+           PERFORM UNTIL CONN-EOF-YES
+               READ CONN-FILE INTO WS-CONN-LINE
                    AT END
-                       SET MSG-VIEW-EOF-YES TO TRUE
+                       SET CONN-EOF-YES TO TRUE
                    NOT AT END
-                       PERFORM PARSE-MSG-LINE
-                       IF FUNCTION UPPER-CASE(
-                          FUNCTION TRIM(WS-MSG-PARSE-SENDER)) =
-                          FUNCTION UPPER-CASE(
-                          FUNCTION TRIM(WS-CURRENT-USERNAME))
-                       OR FUNCTION UPPER-CASE(
-                          FUNCTION TRIM(WS-MSG-PARSE-RECIP)) =
-                          FUNCTION UPPER-CASE(
-                          FUNCTION TRIM(WS-CURRENT-USERNAME))
-                           ADD 1 TO WS-MSG-COUNT-NUM
-                           PERFORM DISPLAY-ONE-MESSAGE
+                       PERFORM PARSE-CONNECTION-LINE
+                       IF WS-CONN-TOTAL < 25
+                           ADD 1 TO WS-CONN-TOTAL
+                           MOVE WS-CONN-SENDER-PARSE
+                               TO WS-CA-SENDER(WS-CONN-TOTAL)
+                           MOVE WS-CONN-RECIP-PARSE
+                               TO WS-CA-RECIP(WS-CONN-TOTAL)
+                           MOVE WS-CONN-STATUS-PARSE
+                               TO WS-CA-STATUS(WS-CONN-TOTAL)
                        END-IF
                END-READ
            END-PERFORM
 
-           CLOSE MSGS-FILE
-           SET MSG-VIEW-EOF-NO TO TRUE
-
-           IF WS-MSG-COUNT-NUM = 0
-               MOVE "You have no messages." TO WS-OUTLINE
-               PERFORM PRINT-LINE
-           END-IF
-
-           MOVE "---------------------" TO WS-OUTLINE
-           PERFORM PRINT-LINE
-           MOVE SPACES TO WS-OUTLINE
-           MOVE WS-MSG-COUNT-NUM TO WS-MSG-COUNT-DISP
-           STRING "Total Messages: " DELIMITED BY SIZE
-                  WS-MSG-COUNT-DISP DELIMITED BY SIZE
-                  INTO WS-OUTLINE
-           END-STRING
-           PERFORM PRINT-LINE
-           MOVE "---------------------" TO WS-OUTLINE
-           PERFORM PRINT-LINE.
-
-      *>---------------------------------------------
-      *> PARSE-MSG-LINE
-      *> Purpose: Split a messages.dat record into
-      *>          its four fields
-      *>---------------------------------------------
-       PARSE-MSG-LINE.
-           MOVE SPACES TO WS-MSG-PARSE-SENDER
-           MOVE SPACES TO WS-MSG-PARSE-RECIP
-           MOVE SPACES TO WS-MSG-PARSE-TS
-           MOVE SPACES TO WS-MSG-PARSE-BODY
-
-           UNSTRING WS-MSG-LINE
-               DELIMITED BY "|"
-               INTO WS-MSG-PARSE-SENDER
-                    WS-MSG-PARSE-RECIP
-                    WS-MSG-PARSE-TS
-                    WS-MSG-PARSE-BODY
-           END-UNSTRING.
-
-      *>---------------------------------------------
-      *> DISPLAY-ONE-MESSAGE
-      *> Purpose: Print a single message record
-      *>---------------------------------------------
-       DISPLAY-ONE-MESSAGE.
-           MOVE SPACES TO WS-OUTLINE
-           STRING
-               "From: " DELIMITED BY SIZE
-               FUNCTION TRIM(WS-MSG-PARSE-SENDER) DELIMITED BY SIZE
-               "  To: " DELIMITED BY SIZE
-               FUNCTION TRIM(WS-MSG-PARSE-RECIP) DELIMITED BY SIZE
-               INTO WS-OUTLINE
-           END-STRING
-           PERFORM PRINT-LINE
-
-           MOVE SPACES TO WS-OUTLINE
-           STRING
-               "Sent: " DELIMITED BY SIZE
-               FUNCTION TRIM(WS-MSG-PARSE-TS) DELIMITED BY SIZE
-               INTO WS-OUTLINE
-           END-STRING
-           PERFORM PRINT-LINE
-
-           MOVE SPACES TO WS-OUTLINE
-           STRING
-               "  " DELIMITED BY SIZE
-               FUNCTION TRIM(WS-MSG-PARSE-BODY) DELIMITED BY SIZE
-               INTO WS-OUTLINE
-           END-STRING
-           PERFORM PRINT-LINE
-
-           MOVE "---" TO WS-OUTLINE
-           PERFORM PRINT-LINE.
-
+           CLOSE CONN-FILE
+           SET CONN-EOF-NO TO TRUE.
 
 
            
