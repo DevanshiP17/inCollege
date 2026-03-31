@@ -4,10 +4,10 @@ Welcome to InCollege!
 1. Log In
 2. Create New Account
 Enter your choice: 1
-Please enter your username: TestUser
-Please enter your password: Password1!
+Please enter your username: alice
+Please enter your password: Alice1!pass
 You have successfully logged in.
-Welcome, TestUser!
+Welcome, alice!
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for User
@@ -23,9 +23,9 @@ Enter your choice: 9
 2. View My Messages
 3. Back to Main Menu
 Enter your choice: 1
-Enter recipient's username (must be a connection): newstudent
-Enter your message (max 200 chars): Hello NewStudent, this is a case-insensitive test!
-Message sent to newstudent successfully!
+Enter recipient's username (must be a connection): TestUser
+Enter your message (max 200 chars): Hey TestUser, let us connect soon!
+Message sent to TestUser successfully!
 ---------------------
 --- Messages Menu ---
 1. Send a New Message
@@ -42,13 +42,6 @@ Enter your choice: 3
 8. Job Search/Internship
 9. Messages
 Enter your choice: 7
-Welcome to InCollege!
-
----------------------
-1. Log In
-2. Create New Account
-Enter your choice:
-Invalid choice.
 Welcome to InCollege!
 
 ---------------------
