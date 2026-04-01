@@ -1,0 +1,10 @@
+1
+TestUser
+Password1!
+9
+1
+newstudent
+Hello NewStudent, this is a case-insensitive test!
+3
+7
+

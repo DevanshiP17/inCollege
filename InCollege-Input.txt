@@ -1,6 +1,10 @@
 1
 TestUser
 Password1!
-4
-John  Doe
-logout
+9
+1
+newstudent
+Hello NewStudent, this is a case-insensitive test!
+3
+7
+
