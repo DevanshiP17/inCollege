@@ -1,0 +1,12 @@
+1
+TestUser
+Password1!
+9
+1
+newstudent
+Hello NewStudent, this is a week9 test !
+3
+9
+2
+3
+10

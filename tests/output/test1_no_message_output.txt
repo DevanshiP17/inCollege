@@ -23,9 +23,9 @@ Enter your choice: 9
 2. View My Messages
 3. Back to Main Menu
 Enter your choice: 1
-Enter recipient's username (must be a connection): NewStudent
-Enter your message (max 200 chars): Hello NewStudent, hope you are doing well!
-Message sent to NewStudent successfully!
+Enter recipient's username (must be a connection): newstudent
+Enter your message (max 200 chars): Hello NewStudent, this is a week9 test !
+Message sent to newstudent successfully!
 ---------------------
 --- Messages Menu ---
 1. Send a New Message
@@ -41,10 +41,38 @@ Enter your choice: 3
 7. Go Back
 8. Job Search/Internship
 9. Messages
-Enter your choice: 7
-Welcome to InCollege!
-
+Enter your choice: 9
+--- Messages Menu ---
+1. Send a New Message
+2. View My Messages
+3. Back to Main Menu
+Enter your choice: 2
+--- Your Messages ---
+You have no messages at this time.
 ---------------------
-1. Log In
-2. Create New Account
+--- Messages Menu ---
+1. Send a New Message
+2. View My Messages
+3. Back to Main Menu
+Enter your choice: 3
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for User
+4. View My Pending Connection Requests
+5. Learn a New Skill
+6. View My Network
+7. Go Back
+8. Job Search/Internship
+9. Messages
+Enter your choice: 10
+Invalid choice.
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for User
+4. View My Pending Connection Requests
+5. Learn a New Skill
+6. View My Network
+7. Go Back
+8. Job Search/Internship
+9. Messages
 --- END_OF_PROGRAM_EXECUTION ---
