@@ -1,0 +1,62 @@
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: 2
+Please enter your username: TestUser3
+Please enter your password: Passw0rd!!!
+Account created successfully!
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: 1
+Please enter your username: TestUser3
+Please enter your password: Passw0rd!!!
+You have successfully logged in
+Welcome, TestUser3!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 1
+--- Create/Edit Profile ---
+Enter First Name: Johnny
+Enter Last Name: Doe
+Enter University/College Attended: University of South Florida
+Enter Major: Biomedical Engineering
+Enter Graduation Year (YYYY): 2030
+About Me (optional, max 200 chars, Enter blank line to skip):
+Experience #1 - Title: ax 3 entries. Enter 'DONE' to finish): DONE
+Education #1 - Degree: , max 3 entries. Enter 'DONE' to finish): DONE
+Profile saved successfully!
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 2
+--- Your Profile ---
+Name: Johnny Doe
+University: University of South Florida
+Major: Biomedical Engineering
+Graduation Year: 2030
+About Me:
+
+Work Experience:
+  (No work experience added yet)
+
+Education:
+  (No education added yet)
+
+--------------------
+1. Create/Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: Logout
+Welcome to InCollege!
+1. Log In
+2. Create New Account
+Enter your choice: 3
+--- END_OF_PROGRAM_EXECUTION ---

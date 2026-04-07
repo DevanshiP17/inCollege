@@ -1,60 +1,216 @@
-# View Messages Test Cases
+# InCollege Test Suite - Epic 1
 
-## Positive Test 1:  a user can view exactly one received message.
+This directory contains a comprehensive test suite for InCollege Epic #1: Log In, Part 1.
 
-### Conditions
+## Directory Structure
 
-messages.dat has: 
+```
+InCollege/
+├── InCollege.cob          # Main COBOL program
+├── accounts.dat           # Account persistence file (generated)
+└── tests/                 # Test suite directory
+    ├── run_all_tests.sh          # Automated test runner
+    ├── run_single_test.sh        # Single test debugger
+    ├── README.md                 # This file
+    ├── TEST_CASES_DOCUMENTATION.md
+    ├── TEST_QUICK_REFERENCE.md
+    ├── INDEX.md
+    ├── test_cases/               # Test input files
+    │   ├── Epic1-Story1-Test1-Input.txt
+    │   ├── Epic1-Story1-Test2-Input.txt
+    │   └── ... (all input files)
+    ├── test_cases_output/        # Expected output files
+    │   ├── Epic1-Story1-Test1-Output.txt
+    │   ├── Epic1-Story1-Test2-Output.txt
+    │   └── ... (all output files)
+    └── reports/                  # Test execution reports (generated)
+        ├── test_report_YYYY-MM-DD_HH-MM-SS.md
+        └── latest_summary.txt
+```
 
-alice|TestUser|2026-04-06 07:56:00|Hi TestUser!
+## Quick Start
 
-## Positive Test 2:  a user can view multiple messages from different senders.
+### Option 1: Run All Tests (Automated)
+```bash
+cd tests
+./run_all_tests.sh
+```
 
-### Conditions
+### Option 2: Run Single Test (Debug)
+```bash
+cd tests
+./run_single_test.sh Epic1-Story1-Test1
+```
 
-messages.dat has :
-alice|TestUser|2026-04-06 07:56:00|Good Afternoon
+### Option 3: Manual Testing
+```bash
+# From the InCollege root directory
+cp tests/test_cases/Epic1-Story1-Test1-Input.txt InCollege-Input.txt
+./InCollege
+diff InCollege-Output.txt tests/test_cases_output/Epic1-Story1-Test1-Output.txt
+```
 
-NewStudent|TestUser|2026-04-06 08:01:00|Hey how are you.
+## Test Files Structure
 
+Each test case consists of two files:
+- **test_cases/Epic1-[Story]-Test[N]-Input.txt** - The input file
+- **test_cases_output/Epic1-[Story]-Test[N]-Output.txt** - The expected output
 
-## Negative Test 1: messages.dat exists with messages, but no messages to logged in user
+## Test Cases by User Story
 
-### Conditions
+### Account Creation (Story 1)
+- Epic1-Story1-Test1: Valid 8-character password (minimum)
+- Epic1-Story1-Test2: Valid 12-character password (maximum)
 
-mesages.dat has:
+### Password Validation (Story 2)
+- Epic1-Story2-Test1: Password too short (7 chars) - NEGATIVE
+- Epic1-Story2-Test2: Password too long (13 chars) - NEGATIVE
+- Epic1-Story2-Test3: Missing capital letter - NEGATIVE
+- Epic1-Story2-Test4: Missing digit - NEGATIVE
+- Epic1-Story2-Test5: Missing special character - NEGATIVE
 
-alice|NewStudent|2026-04-06 08:00:00|Hey guy
+### Account Limit (Story 3)
+- Epic1-Story3-Test1: Create 5 accounts, reject 6th
 
-NewStudent|alice|2026-04-06 08:10:00|hey
+### Login Success (Story 4)
+- Epic1-Story4-Test1: Successful login with valid credentials
 
+### Login Failure (Story 5)
+- Epic1-Story5-Test1: Wrong password with retry
+- Epic1-Story5-Test2: Wrong username with retry
 
-## Negative Test 2: system shows no messages with no messages.dat file
+### Post-Login Navigation (Story 6)
+- Epic1-Story6-Test1: Job search under construction
+- Epic1-Story6-Test2: Find someone under construction
 
-### Conditions
+### Learn a Skill (Story 7)
+- Epic1-Story7-Test1: Select skill and go back
 
-delete messages.dat
+### Skill Navigation (Story 8)
+- Epic1-Story8-Test1: Multiple skill selections
 
-## Negative case 3: make sure outgoing messages don't show up in view my messages
+### Input Validation (Story 9)
+- Epic1-Story9-Test1: Invalid top-level menu choices
+- Epic1-Story9-Test2: Invalid post-login menu choices
 
-### Conditions
+### Username Uniqueness (Story 10)
+- Epic1-Story10-Test1: Duplicate username rejection
 
-TestUser|alice|2026-04-06 11:00:00|hey alice
+### Comprehensive Tests
+- Epic1-Comprehensive-Test1: Full workflow test
 
-alice|TestUser|2026-04-06 08:17:00| hey test user
+### Edge Cases
+- Epic1-Edge-Test1: Login with no accounts
+- Epic1-Edge-Test2: Multiple failed login attempts
+- Epic1-Edge-Test3: Text-based menu navigation
 
-## Edge case 1: make sure system matches username with case insensitivty
+## Running a Test Example
 
-### Conditions
+```bash
+# From the tests directory:
+./run_single_test.sh Epic1-Story1-Test1
 
-messages.dat:
+# Or manually from InCollege root:
+cp tests/test_cases/Epic1-Story1-Test1-Input.txt InCollege-Input.txt
+./InCollege
+diff InCollege-Output.txt tests/test_cases_output/Epic1-Story1-Test1-Output.txt
 
-alice|testuser|2026-04-06 08:22:00| testing case insensitivity
+# No output from diff means the test passed!
+```
 
-## Edge case 2: make sure system still works with blank messages
+## Test Execution Best Practices
 
-### Conditions
+1. **Clean State**: The scripts automatically clear `accounts.dat` contents before each test (file is preserved, just emptied)
+2. **Run from tests directory**: Execute scripts from the `tests/` directory
+3. **Exact Matching**: Output must match character-by-character, including whitespace
+4. **Input Echo**: Remember that all input is echoed to output as per requirements
+5. **Review Reports**: Check the `reports/` directory for detailed execution reports
 
-messages.dat:
+## Automated Test Script
 
-alice|TestUser|2026-04-06 08:28:00| 
+The `run_all_tests.sh` script automatically:
+- Locates the InCollege executable in the parent directory
+- Finds all test input files in `test_cases/`
+- Matches them with expected outputs in `test_cases_output/`
+- Clears contents of `accounts.dat` between tests (preserves the file)
+- Reports pass/fail for each test
+- **Generates detailed reports in `reports/` directory**
+- Provides a summary
+
+Usage:
+```bash
+cd tests
+./run_all_tests.sh
+```
+
+### Generated Reports
+
+After running tests, check the `reports/` directory:
+
+1. **test_report_YYYY-MM-DD_HH-MM-SS.md** - Detailed markdown report with:
+   - Summary table with pass/fail counts
+   - List of failed tests (if any)
+   - For each test:
+     - Test status (PASSED/FAILED)
+     - Input used
+     - Expected vs actual output
+     - Diff of differences (for failed tests)
+
+2. **latest_summary.txt** - Quick text summary with:
+   - Total/passed/failed counts
+   - Pass rate percentage
+   - List of failed tests
+   - Path to full report
+
+Example report structure:
+```
+reports/
+├── test_report_2024-01-26_14-30-45.md  ← Full detailed report
+├── test_report_2024-01-26_15-22-10.md
+└── latest_summary.txt                   ← Quick summary of last run
+```
+
+## Requirements Coverage
+
+This test suite provides complete coverage of:
+- ✅ Account creation with password validation
+- ✅ Password requirements (length, capital, digit, special char)
+- ✅ Account limit (max 5 accounts)
+- ✅ Login success and failure scenarios
+- ✅ Unlimited login retry attempts
+- ✅ Post-login menu navigation
+- ✅ Under construction messages
+- ✅ Learn a skill feature with 5 skills
+- ✅ Go back functionality
+- ✅ Logout functionality
+- ✅ Invalid input handling
+- ✅ Username uniqueness
+- ✅ Input file reading
+- ✅ Output file writing (matching screen output)
+- ✅ Account persistence
+
+## Total Test Cases
+
+- **22 test cases** covering all requirements
+- **Positive tests**: 10
+- **Negative tests**: 7
+- **Edge cases**: 3
+- **Integration tests**: 2
+
+## File Naming Convention
+
+- **Story tests**: Epic1-Story[N]-Test[M]-[Input|Output].txt
+- **Comprehensive tests**: Epic1-Comprehensive-Test[N]-[Input|Output].txt
+- **Edge case tests**: Epic1-Edge-Test[N]-[Input|Output].txt
+
+Where:
+- N = Story number (1-10)
+- M = Test number within that story
+
+## Need Help?
+
+See TEST_CASES_DOCUMENTATION.md for detailed information about each test case, including:
+- Test objectives
+- Expected results
+- Error messages
+- Coverage matrix

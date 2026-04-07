@@ -1,0 +1,28 @@
+2
+TestUser27
+Passw0rd!
+1
+TestUser27
+Passw0rd!
+1
+JJ
+Nguyen
+University of South Florida
+Computer Science
+2027
+
+DONE
+Bachelor of Science
+University A 
+2023-2027
+Higher Education
+University B
+2027-2028
+Postgraduate Diploma
+University C 
+2028-2030
+Postgraduate Diploma
+University D
+2030-2032
+DONE
+2

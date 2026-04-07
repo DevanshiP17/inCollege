@@ -1,0 +1,16 @@
+1
+TestUser2
+Passw0rd!
+1
+John
+Doe
+University of South Florida
+Computer Science
+2027
+
+DONE
+Bachelor of Science
+University A 
+2023-2027
+DONE
+
