@@ -22,19 +22,9 @@ Enter your choice: 9
 1. Send a New Message
 2. View My Messages
 3. Back to Main Menu
-Enter your choice: 1
-Enter recipient's username (must be a connection): NewStudent
-Enter your message (max 200 chars): First message, hope you are well!
-Message sent to NewStudent successfully!
----------------------
---- Messages Menu ---
-1. Send a New Message
-2. View My Messages
-3. Back to Main Menu
-Enter your choice: 1
-Enter recipient's username (must be a connection): NewStudent
-Enter your message (max 200 chars): Second message, following up!
-Message sent to NewStudent successfully!
+Enter your choice: 2
+--- Your Messages ---
+You have no messages at this time.
 ---------------------
 --- Messages Menu ---
 1. Send a New Message

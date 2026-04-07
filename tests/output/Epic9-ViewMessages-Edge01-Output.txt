@@ -22,9 +22,13 @@ Enter your choice: 9
 1. Send a New Message
 2. View My Messages
 3. Back to Main Menu
-Enter your choice: 1
-Enter recipient's username (must be a connection): TestUser
-You can only message users you are connected with.
+Enter your choice: 2
+--- Your Messages ---
+From: alice
+Message: testing case insensitivity
+Sent: 2026-04-06 08:22:00
+---
+---------------------
 --- Messages Menu ---
 1. Send a New Message
 2. View My Messages
@@ -40,13 +44,6 @@ Enter your choice: 3
 8. Job Search/Internship
 9. Messages
 Enter your choice: 7
-Welcome to InCollege!
-
----------------------
-1. Log In
-2. Create New Account
-Enter your choice:
-Invalid choice.
 Welcome to InCollege!
 
 ---------------------

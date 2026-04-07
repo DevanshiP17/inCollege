@@ -1,0 +1,7 @@
+1
+NewStudent
+Password2@
+9
+2
+3
+10

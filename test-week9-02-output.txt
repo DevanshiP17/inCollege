@@ -4,10 +4,10 @@ Welcome to InCollege!
 1. Log In
 2. Create New Account
 Enter your choice: 1
-Please enter your username: TestUser
-Please enter your password: Password1!
+Please enter your username: SendingUser
+Please enter your password: SndPass1!
 You have successfully logged in.
-Welcome, TestUser!
+Welcome, SendingUser!
 1. Create/Edit My Profile
 2. View My Profile
 3. Search for User
@@ -22,8 +22,10 @@ Enter your choice: 9
 1. Send a New Message
 2. View My Messages
 3. Back to Main Menu
-Enter your choice: 5
-Invalid choice.
+Enter your choice: 2
+--- Your Messages ---
+You have no messages at this time.
+---------------------
 --- Messages Menu ---
 1. Send a New Message
 2. View My Messages
@@ -39,13 +41,6 @@ Enter your choice: 3
 8. Job Search/Internship
 9. Messages
 Enter your choice: 7
-Welcome to InCollege!
-
----------------------
-1. Log In
-2. Create New Account
-Enter your choice:
-Invalid choice.
 Welcome to InCollege!
 
 ---------------------

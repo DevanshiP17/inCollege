@@ -2,7 +2,6 @@
 TestUser
 Password1!
 9
-1
-ghostuser
+2
 3
 7
