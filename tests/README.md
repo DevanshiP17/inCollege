@@ -4,7 +4,9 @@
 
 ### Conditions
 
-messages.dat has: alice|TestUser|2026-04-06 07:56:00|Hi TestUser!
+messages.dat has: 
+
+alice|TestUser|2026-04-06 07:56:00|Hi TestUser!
 
 ## Positive Test 2:  a user can view multiple messages from different senders.
 
@@ -12,6 +14,7 @@ messages.dat has: alice|TestUser|2026-04-06 07:56:00|Hi TestUser!
 
 messages.dat has :
 alice|TestUser|2026-04-06 07:56:00|Good Afternoon
+
 NewStudent|TestUser|2026-04-06 08:01:00|Hey how are you.
 
 
@@ -20,7 +23,9 @@ NewStudent|TestUser|2026-04-06 08:01:00|Hey how are you.
 ### Conditions
 
 mesages.dat has:
+
 alice|NewStudent|2026-04-06 08:00:00|Hey guy
+
 NewStudent|alice|2026-04-06 08:10:00|hey
 
 
@@ -35,6 +40,7 @@ delete messages.dat
 ### Conditions
 
 TestUser|alice|2026-04-06 11:00:00|hey alice
+
 alice|TestUser|2026-04-06 08:17:00| hey test user
 
 ## Edge case 1: make sure system matches username with case insensitivty
@@ -42,6 +48,7 @@ alice|TestUser|2026-04-06 08:17:00| hey test user
 ### Conditions
 
 messages.dat:
+
 alice|testuser|2026-04-06 08:22:00| testing case insensitivity
 
 ## Edge case 2: make sure system still works with blank messages
@@ -49,4 +56,5 @@ alice|testuser|2026-04-06 08:22:00| testing case insensitivity
 ### Conditions
 
 messages.dat:
+
 alice|TestUser|2026-04-06 08:28:00| 
